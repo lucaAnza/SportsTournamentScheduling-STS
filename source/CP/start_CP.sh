@@ -19,8 +19,11 @@ while true; do
         # Ask parameters
         read -rp "Enter number of teams (int): " team
         
+        start=$(date +%s.%N)
         minizinc -D "n=$team" STS_matchVar_first\ column.mzn > output.txt
-        python3 minizinc_reader.py
+        end=$(date +%s.%N)
+        runtime=$(echo "$end - $start" | bc)
+        python3 minizinc_reader.py $runtime
     else
         echo "Invalid option. Try again."
     fi

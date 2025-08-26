@@ -1,4 +1,5 @@
 import json
+import sys
 
 
 # ========== SETTINGS VARIABLE ========== #
@@ -7,7 +8,7 @@ default_filename_solution_raw = 'output.txt'
 
 
 # ========== HELP FUNCTIONS ========== #
-def process_output_string(output_str, data, total_time=0, solution_name="myAlgorithm"):
+def process_output_string(output_str, data, total_time, solution_name="myAlgorithm"):
     lines = output_str.splitlines()
     solution_lines = []
     optimal = False
@@ -19,7 +20,7 @@ def process_output_string(output_str, data, total_time=0, solution_name="myAlgor
         if not stripped:
             continue
         if stripped.startswith('n:'):
-            continue
+            n = stripped[3:]
         elif stripped.startswith('sol:'):
             in_solution = True
             sol_line = stripped[4:].strip()
@@ -61,7 +62,7 @@ def process_output_string(output_str, data, total_time=0, solution_name="myAlgor
         'obj': obj_val
     }
     
-    return new_entry
+    return new_entry , n
 
 def import_raw_solution(filename=default_filename_solution_raw):
     try:
@@ -125,7 +126,6 @@ def export_json_solution(data, filename=default_filename_solution_json, indent=4
     print(f"✅ Successfully exported the json solution  ('{filename}')")
 
 def add_solution_json(data , new_entry , solution_name = 'Name'):
-    
     data[solution_name] = new_entry
     return data
 
@@ -133,9 +133,13 @@ def add_solution_json(data , new_entry , solution_name = 'Name'):
 # Transform the raw output from minizinc into a json structured file
 if __name__ == '__main__':
     
+    if len(sys.argv) > 1:
+        time = float(sys.argv[1])
+        time = round(time , 2)
+
     data = import_json_solution()
     output = import_raw_solution()
-    new_entry = process_output_string(output , data)
-    data = add_solution_json(data , new_entry , f'CP (n = 100)')
+    new_entry , n = process_output_string(output , data , time)
+    data = add_solution_json(data , new_entry , f'CP (n = {n})')
     export_json_solution(data)
 
