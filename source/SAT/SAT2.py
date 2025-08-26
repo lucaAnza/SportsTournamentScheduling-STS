@@ -15,7 +15,7 @@ precomputing_version = False
 optimized_label = 'Optimized'
 precomputing_label = '(Pre-solving)'
 script_filename = 'solutions.json'
-docker_filename = '/app/outputs/solutions.json'
+docker_filename = '/app/outputs/SAT/solutions.json'
 default_filename = script_filename
 
 # terminal parameters : team(int) , optimized (bool) , launched_from_docker (bool) , precomputing(bool)

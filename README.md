@@ -62,3 +62,4 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 
 1. Populate /Result
 2. instead of saving outputs in `/outputs` save them in r`es/SAT/outputs` , `res/CP/outputs` , ...
+3. Ask into CP script if is run from docker or not

@@ -1,10 +1,11 @@
 import json
 import sys
+import os
 
 
 # ========== SETTINGS VARIABLE ========== #
-default_filename_solution_json = 'solutions.json'
-default_filename_solution_raw = 'output.txt'
+script_filename = 'solutions.json'
+docker_filename = '/app/outputs/CP/solutions.json'
 
 
 # ========== HELP FUNCTIONS ========== #
@@ -64,7 +65,7 @@ def process_output_string(output_str, data, total_time, solution_name="myAlgorit
     
     return new_entry , n
 
-def import_raw_solution(filename=default_filename_solution_raw):
+def import_raw_solution(filename='output.txt'):
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -81,7 +82,7 @@ def import_raw_solution(filename=default_filename_solution_raw):
         return ""
     
 
-def import_json_solution(filename=default_filename_solution_json):
+def import_json_solution(filename=docker_filename):
     try:
         with open(filename, "r") as f:
             return json.load(f)
@@ -92,7 +93,7 @@ def import_json_solution(filename=default_filename_solution_json):
         print(f"Error during file reading. Returning empty dictionary.")
         return {}
 
-def export_json_solution(data, filename=default_filename_solution_json, indent=4, compact_keys=("sol",)):
+def export_json_solution(data, filename=docker_filename, indent=4, compact_keys=("sol",)):
     """Pretty-print JSON, but keep inner lists in `compact_keys` compact (like [1,2])."""
     def write(obj, f, level=0, parent_key=None):
         pad = " " * (level * indent)
@@ -119,6 +120,9 @@ def export_json_solution(data, filename=default_filename_solution_json, indent=4
                 f.write("\n" + pad + "]")
         else:
             f.write(json.dumps(obj))
+
+    # Make sure parent directories exist
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     with open(filename, "w") as f:
         write(data, f, 0); f.write("\n")
