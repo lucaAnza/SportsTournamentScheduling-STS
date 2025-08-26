@@ -47,19 +47,19 @@ This repository provides an implementation for solving the Sports Tournament Sch
    ```
 3. Use the script menu as you prefer.
 
-   * Every **JSON solution generated** will be saved in the `/outputs` directory.
+   * Every **JSON solution generated** will be saved in the `result/<MODEL>/outputs` directory.
    * Each program appends its solution to the same file.
-   * To reset, simply delete `outputs/solutions.json`.
+   * To reset, simply delete `solutions.json` file.
 
 
 ###  Result
 
-In the `/Result` directory, you will find **key results** saved for specific values of n (e.g., n = 2, n = 6, n = 12).
+In the `/result` directory, you will find **key results** saved for specific values of n (e.g., n = 2, n = 6, n = 12).
 For each model, the _highest value of n_ successfully reached is also recorded.
 For example, if a model only shows _n = 12_ and no other values, it means that 12 is the maximum value it was able to achieve.
 
 ### TODO
 
-1. Populate /Result
+1. Populate /result
 2. instead of saving outputs in `/outputs` save them in r`es/SAT/outputs` , `res/CP/outputs` , ...
 3. Ask into CP script if is run from docker or not

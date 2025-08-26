@@ -10,7 +10,7 @@ import time
 team = 6  # default
 optimized_version = False
 script_filename = 'solutions.json'               # Name if this script is executed for debugging
-docker_filename = '/app/outputs/solutions.json'  # Name if this script is executed from docker script
+docker_filename = '/app/outputs/SAT/solutions.json'  # Name if this script is executed from docker script
 default_filename = script_filename
 optimized_label = 'Optimized'
 if len(sys.argv) >= 3:
