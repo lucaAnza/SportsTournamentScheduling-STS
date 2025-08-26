@@ -60,6 +60,5 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 
 ### TODO
 
-1. fix label of opt
-2. Populate /Result
-3. instead of saving outputs in `/outputs` save them in r`es/SAT/outputs` , `res/CP/outputs` , ...
+1. Populate /Result
+2. instead of saving outputs in `/outputs` save them in r`es/SAT/outputs` , `res/CP/outputs` , ...

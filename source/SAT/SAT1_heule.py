@@ -267,6 +267,7 @@ if(optimized_version):
     heule = Optimize()  # Use Solver() if you don't use optimization function
 else:
     heule = Solver()
+    optimized_label = ''
 ################################# DOMAIN DEFINITION ###############################
 
 
@@ -341,7 +342,7 @@ solve_time = ((end-start))
 if( heule_result == z3.sat):
     print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {solve_time:.2f} = {(init_time+solve_time):.2f}s)")
     m = heule.model()
-    solutions = add_solution_json(heule.model() , solutions , round(init_time+solve_time,2) , optimized_version , m.evaluate(total_imbalance).as_long() , f"heule(n={team})")
+    solutions = add_solution_json(heule.model() , solutions , round(init_time+solve_time,2) , optimized_version , m.evaluate(total_imbalance).as_long() , f"heule(n={team})" + optimized_label)
     if(optimized_version):
         print("OPT Evaluation minium possible (opt-enabled) : " , heule.lower(h) )
     else:

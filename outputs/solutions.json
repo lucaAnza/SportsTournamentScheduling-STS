@@ -153,5 +153,45 @@
         "time": 1.76,
         "optimal": false,
         "obj": 20
+    },
+    "pairwise(n=2)Optimized": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.07,
+        "optimal": true,
+        "obj": 2
+    },
+    "heule(n=2)Optimized": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.01,
+        "optimal": true,
+        "obj": 2
+    },
+    "bitwise(n=2)Optimized": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.01,
+        "optimal": true,
+        "obj": 2
+    },
+    "sequential(n=2)Optimized": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.01,
+        "optimal": true,
+        "obj": 2
+    },
+    "SAT2(n=2)Optimized(Pre-solving)": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.01,
+        "optimal": true,
+        "obj": 2
     }
 }

@@ -285,6 +285,7 @@ if(optimized_version):
     sequential = Optimize()  # Use Solver() if you don't use optimization function
 else:
     sequential = Solver()
+    optimized_label = ''
 ################################# DOMAIN DEFINITION ###############################
 
 
@@ -381,7 +382,7 @@ solve_time = ((end-start))
 if( pairwise_result == z3.sat):
     print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {solve_time:.2f} = {(init_time+solve_time):.2f}s)")
     m = sequential.model()
-    solutions = add_solution_json(sequential.model() , solutions , round(init_time+solve_time,2) , optimized_version , m.evaluate(total_imbalance).as_long() , f"sequential(n={team})")
+    solutions = add_solution_json(sequential.model() , solutions , round(init_time+solve_time,2) , optimized_version , m.evaluate(total_imbalance).as_long() , f"sequential(n={team})" + optimized_label)
     if(optimized_version):
         print("OPT Evaluation minium possible (opt-enabled) : " , sequential.lower(h) )
     else:

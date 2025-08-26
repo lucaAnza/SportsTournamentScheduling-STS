@@ -233,6 +233,8 @@ total_imbalance = Sum(team_imbalance)
 
 if optimized_version:
     h = S.minimize(total_imbalance)
+else:
+    optimized_label = ''
     
 start2 = time.perf_counter()
 init_time = start2 - start1
@@ -323,7 +325,7 @@ if res == sat:
         total_time=round(init_time + solve_time, 2),
         optimal=optimized_version,
         obj=total,
-        solution_name=f"SAT2(n={team})" + precomputing_label
+        solution_name=f"SAT2(n={team})" + optimized_label + precomputing_label
     )
     if optimized_version:
         print("OPT Evaluation minimum possible (opt-enabled):", S.lower(h))
