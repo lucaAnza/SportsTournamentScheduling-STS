@@ -122,6 +122,8 @@ def export_json_solution(data, filename=default_filename_solution_json, indent=4
     with open(filename, "w") as f:
         write(data, f, 0); f.write("\n")
 
+    print(f"✅ Successfully exported the json solution  ('{filename}')")
+
 def add_solution_json(data , new_entry , solution_name = 'Name'):
     
     data[solution_name] = new_entry
@@ -134,6 +136,6 @@ if __name__ == '__main__':
     data = import_json_solution()
     output = import_raw_solution()
     new_entry = process_output_string(output , data)
-    data = add_solution_json(data , new_entry , 'CP (n = 100)')
+    data = add_solution_json(data , new_entry , f'CP (n = 100)')
     export_json_solution(data)
 
