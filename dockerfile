@@ -6,7 +6,7 @@ RUN pip install --no-cache-dir z3-solver numpy
 WORKDIR /app   
 
 # Copy into WORKDIR
-COPY Source/ /app 
+COPY source/ /app 
 
 # Comand to execute
 CMD ["bash" , "start.sh"]

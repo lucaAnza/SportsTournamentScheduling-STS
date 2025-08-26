@@ -9,4 +9,5 @@ echo -e "-----------------------------------------------------------------------
 docker run --rm -it -v $(pwd)/outputs:/app/outputs cmdo_img
 
 
-# docker run -it cmdo_img bash  # Uncomment if you want to navigate docker filesystem
+# Uncomment if you want to navigate docker filesystem
+#docker run -it cmdo_img bash  
