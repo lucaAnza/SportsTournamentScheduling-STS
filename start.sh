@@ -1,0 +1,12 @@
+# Build the docker
+docker build -t cmdo_img:latest .
+
+# Show all imgs
+docker images
+echo -e "-------------------------------------------------------------------------\n"
+
+# Execute docker imgdocker  (it->interactive terminal  -v->create a mount point)
+docker run --rm -it -v $(pwd)/outputs:/app/outputs cmdo_img
+
+
+# docker run -it cmdo_img bash  # Uncomment if you want to navigate docker filesystem
