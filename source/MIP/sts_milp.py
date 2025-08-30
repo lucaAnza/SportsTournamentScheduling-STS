@@ -1,15 +1,37 @@
 import time
 import os
 import json
+import sys
 from mip import Model, BINARY, INTEGER, xsum, minimize, OptimizationStatus
 
 # ========== SETTINGS VARIABLE ========== #
 script_filename = 'solutions.json'
 docker_filename = '/app/outputs/MIP/solutions.json'
+solution_filename = script_filename
+    
+# ==================================== problem size ====================================
+if len(sys.argv) > 1:
+    n = int(sys.argv[1])
+    if len(sys.argv) > 2:
+        if(sys.argv[2] == 'docker'):
+            solution_filename = docker_filename 
+else : 
+    n = int(input('Number of teams: '))
+    
+if n % 2 != 0:
+    raise ValueError("n must be even")
 
+P = n // 2            # periods per week
+W = n - 1             # weeks
+teams = range(n)
+weeks = range(W)
+periods = range(P)
+
+# all ordered pairs (i<j) (to avoid double match-ups)
+pairs = [(i, j) for i in teams for j in teams if i < j]
 
 # ==================================== I/O functions ==================================== # 
-def import_json_solution(filename=docker_filename):
+def import_json_solution(filename = solution_filename):
     try:
         with open(filename, "r") as f:
             return json.load(f)
@@ -20,7 +42,7 @@ def import_json_solution(filename=docker_filename):
         print(f"Error during file reading. Returning empty dictionary.")
         return {}
 
-def export_json_solution(data, filename=docker_filename, indent=4, compact_keys=("sol",)):
+def export_json_solution(data, filename, indent=4, compact_keys=("sol",)):
     """Pretty-print JSON, but keep inner lists in `compact_keys` compact (like [1,2])."""
     def write(obj, f, level=0, parent_key=None):
         pad = " " * (level * indent)
@@ -71,21 +93,6 @@ def add_solution_json(match_list, time, obj, is_optimal, solution_name="Name"):
         }
     }
     return data
-
-
-# ==================================== problem size ====================================
-n = int(input('Number of teams: '))
-if n % 2 != 0:
-    raise ValueError("n must be even")
-
-P = n // 2            # periods per week
-W = n - 1             # weeks
-teams = range(n)
-weeks = range(W)
-periods = range(P)
-
-# all ordered pairs (i<j) (to avoid double match-ups)
-pairs = [(i, j) for i in teams for j in teams if i < j]
 
 # ==================================== MODEL and VARIABLES ====================================
 # the model aim is to minimize the objective function
@@ -201,9 +208,9 @@ m.objective = xsum(balance)
 m.max_mip_gap = 0.0
 
 
-start = time.time()
+start = time.perf_counter()
 status = m.optimize(max_seconds=300)
-end = time.time()
+end = time.perf_counter()
 runtime= end - start
 
 # ==================================== MAIN ====================================
@@ -234,7 +241,7 @@ if m.num_solutions:
     data = import_json_solution()
     data = add_solution_json(schedule , runtime , m.objective_value , optimal ,  solution_name=f'MIP (n = {n}) OPT = {optimal}')
     print(m.objective_value)
-    export_json_solution(data , filename=script_filename)
+    export_json_solution(data , filename=solution_filename)
     
 else:
     print("No feasible solution found.")

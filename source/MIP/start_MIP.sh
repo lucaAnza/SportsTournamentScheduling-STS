@@ -17,9 +17,8 @@ while true; do
         break
     elif [[ "$choice" == "1" ]]; then
         # Ask parameters
-        read -rp "Enter number of teams (int): " team
-        read -rp "Do you want optimized version? (y/n): " yn
-        python $SCRIPT_DIR/test.py
+        read -rp "Enter number of teams (int): " team 
+        python $SCRIPT_DIR/sts_milp.py $team
 
     else
         echo "Invalid option. Try again."
