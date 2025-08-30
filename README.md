@@ -37,15 +37,34 @@ This repository provides an implementation for solving the Sports Tournament Sch
 
 - Teaching material for courses on optimization, scheduling, and operations research.
 
-## 📝 Getting Started
+## 📝 Getting Started (Linux)
 
 1. Start the Docker engine.
-2. Run the command:
+2. Move to `.../SportsTournamentScheduling-STS`
+3. Run the command:
 
    ```bash
    bash start.sh
    ```
-3. Use the script menu as you prefer.
+4. Use the script menu as you prefer.
+
+   * Every **JSON solution generated** will be saved in the `result/<MODEL>/outputs` directory.
+   * Each program appends its solution to the same file.
+   * To reset, simply delete `solutions.json` file.
+
+## 📝 Getting Started (Windows)
+
+1. Start the Docker engine.
+2. Move to `.../SportsTournamentScheduling-STS`
+3. Open the **Powershell** and Run the command:
+
+   ```bash
+   docker build -t cmdo_img:latest .
+
+   docker run --rm -it -v $(pwd)/result/SAT/outputs:/app/outputs/SAT -v $(pwd)/result/CP/outputs:/app/outputs/CP -v $(pwd)/result/MIP/outputs:/app/outputs/MIP cmdo_img
+   
+   ```
+4. Use the script menu as you prefer.
 
    * Every **JSON solution generated** will be saved in the `result/<MODEL>/outputs` directory.
    * Each program appends its solution to the same file.
@@ -61,5 +80,6 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 ### TODO
 
 1. Populate /result
-2. instead of saving outputs in `/outputs` save them in r`es/SAT/outputs` , `res/CP/outputs` , ...
-3. Ask into CP script if is run from docker or not
+2. Ask into CP script if is run from docker or not
+3. Add how to lunch from windows , how to lunch from linux
+4. Fix windows mount point

@@ -197,7 +197,6 @@ for w in range(weeks):
                 S.add(Implies(And(P[t1][p][w], P[t2][p][w]), M[t1][t2][w]))
 
 # ================================ PRECOMPUTING ==================================
-
 if precomputing_version:
     pre1 = time.perf_counter()
     # Generate possible pairs
