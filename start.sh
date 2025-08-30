@@ -6,7 +6,7 @@ docker images
 echo -e "-------------------------------------------------------------------------\n"
 
 # Execute docker imgdocker  (it->interactive terminal  -v->create a mount point)
-docker run --rm -it -v $(pwd)/result/SAT/outputs:/app/outputs/SAT -v $(pwd)/result/CP/outputs:/app/outputs/CP cmdo_img
+docker run --rm -it -v $(pwd)/result/SAT/outputs:/app/outputs/SAT -v $(pwd)/result/CP/outputs:/app/outputs/CP -v $(pwd)/result/MIP/outputs:/app/outputs/MIP cmdo_img
 
 
 # Uncomment if you want to navigate docker filesystem
