@@ -1,0 +1,180 @@
+\documentclass{article}
+
+% Core math + hyperlinks (does not change fonts/margins)
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+% ---- Metadata (edit) ----
+\title{CMDO 2025 - Sports Tournament Scheduling
+(STS) problem}
+\author{%
+Luca Anzaldi \texttt{luca.anzaldi@studio.unibo.it} \and
+Name Surname \texttt{name.surname@studio.unibo.it}
+}
+\date{\today}
+
+% ---- Helpful macros (optional) ----
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\opt}{\mathrm{opt}}
+\newcommand{\AllDiff}{\texttt{allDifferent}}
+
+\begin{document}
+\maketitle
+
+
+\section{Introduction}
+Briefly introduce the report (not the problem nor the generic methods).
+Describe and formalize what is common to all models:
+inputs, symbols, shared objective variable and bounds, global pre-processing,
+and any assumptions.
+Refer back to this section from later sections to avoid repetition.
+
+% Example structure:
+\paragraph{Input.}
+Define the instance set, indices, and parameters (domains and meanings).
+
+\paragraph{Shared objective variable.}
+Define $z \in \R$ (or $\Z$), its bounds, and interpretation.
+
+\paragraph{Pre-processing.}
+Summarize any reductions, dominance rules, or canonicalizations applied to all models.
+
+% ---------------- CP ----------------
+\section{CP Model}
+This section is mandatory.
+
+\subsection{Decision variables}
+List all CP variables, with domains and semantics.
+For example: $B_i \in \{0,\dots,100\}$ meaning $B_i = j$ iff baker $i$ cooks $j$ cakes.
+
+\subsection{Objective function}
+If the objective variable/bounds differ from Section~1, state it here.
+Then give the CP objective. Example: minimize total area
+$ \sum_{i=1}^{n} W_i \cdot H_i $.
+
+\subsection{Constraints}
+State and explain main problem constraints first; then (optionally) implied and symmetry-breaking constraints.
+
+\paragraph{Main constraints.}
+Formalize each constraint compactly and explain its role.
+
+\paragraph{Implied constraints (optional).}
+Explain why implied constraints hold and how they tighten propagation.
+
+\paragraph{Symmetry breaking (optional).}
+Identify model symmetries and show how your constraints reduce them.
+
+\subsection{Validation}
+Implement the model in \texttt{MiniZinc}; run at least \texttt{Gecode}
+(and optionally other solvers). Design reproducible experiments.
+
+\paragraph{Experimental design.}
+Specify solvers, search strategies, hardware/software, time limits, and any per-instance settings.
+
+\paragraph{Experimental results.}
+Report objective values (best found or proven optimal).
+Mark proven optima in \textbf{bold}. Use \texttt{UNSAT} if proven infeasible; use \texttt{N/A} or ``--'' on timeout.
+
+\begin{table}[h]
+\centering
+\caption{Results with/without symmetry breaking (example layout).}
+\label{tab:cp}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{ID} & \textbf{Chuffed+SB} & \textbf{Chuffed--SB} & \textbf{Gecode+SB} & \textbf{Gecode--SB}\\
+\midrule
+1 & \textbf{80} & 120 & 80 & 80 \\
+2 & 50 & 60 & N/A & N/A \\
+3 & UNSAT & UNSAT & N/A & N/A \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------------- SAT ----------------
+\section{SAT Model}
+Mandatory for groups of 4; optional (alternative to SMT) for \(\le 3\) students.
+
+\subsection{Decision variables}
+Define Boolean literals and their semantics (e.g., $\Delta_{i,j}$ true iff arc $i\!\to\! j$ is used).
+
+\subsection{Objective function}
+Explain the optimization strategy in SAT (e.g., linear/binary search over $z$, PB encodings, cardinalities).
+
+\subsection{Constraints}
+Describe clause encodings for each modeling component.
+State the main constraints first, then implied and symmetry-breaking encodings.
+
+\subsection{Validation}
+Implement with at least \texttt{Z3}. If using a solver-independent format (e.g., \texttt{DIMACS}), note how you swap SAT solvers.
+Follow the same experimental design/results protocol as in CP.
+
+% ---------------- SMT ----------------
+\section{SMT Model}
+Mandatory for groups of 4; optional (alternative to SAT) for \(\le 3\) students.
+
+\subsection{Decision variables}
+List variables, their sorts, and the theory (e.g., \texttt{Int}, \texttt{Real}, \texttt{UF}, \texttt{BV}).
+
+\subsection{Objective function}
+State the objective consistent with Section~1 or differences here.
+
+\subsection{Constraints}
+Provide the SMT formulation (theory-specific), with main, implied, and symmetry-breaking parts.
+
+\subsection{Validation}
+Use \texttt{Z3} or \texttt{CVC5}. Solver-independent inputs (e.g., \texttt{SMT-LIB}) are encouraged.
+Report results as in CP.
+
+% ---------------- MIP ----------------
+\section{MIP Model}
+This section is mandatory.
+
+\subsection{Decision variables}
+List variables and domains (continuous/integer/binary).
+
+\subsection{Objective function}
+Linear objective consistent with Section~1 (state differences if any).
+
+\subsection{Constraints}
+All constraints must be linear; give compact matrix/inequality forms where possible.
+
+\subsection{Validation}
+Run on at least one MIP solver; solver-independent modeling (e.g., \texttt{AMPL}) is a plus.
+Report as in CP.
+
+% --------------- Conclusions ---------------
+\section{Conclusions}
+Summarize findings, modeling trade-offs, and comparative performance insights.
+
+% --------------- Authorship ---------------
+\section*{Authenticity and Author Contribution Statement}
+We declare that the work reported here is our own and properly cites all external ideas and sources.
+Parts of this project (text/code/experiments) were assisted by AI tools where indicated; we disclose the tools used and the exact sections where AI assistance was applied.
+\\[0.5em]
+\textbf{Author contributions.} Briefly outline the role of each author (modeling, implementation, experiments, analysis, writing).
+
+% --------------- References ---------------
+\begin{thebibliography}{9}
+
+\bibitem{minizinc}
+MiniZinc: The Modeling Language,
+\url{https://www.minizinc.org/}.
+
+\bibitem{z3}
+de Moura, Leonardo, and Nikolaj Bj{\o}rner.
+Z3: An Efficient SMT Solver.
+\emph{TACAS} (2008).
+
+\bibitem{cvc5}
+Barbosa et al.
+cvc5: A Versatile and Industrial-Strength SMT Solver.
+\emph{CAV} (2022).
+
+\end{thebibliography}
+
+\end{document}
+
