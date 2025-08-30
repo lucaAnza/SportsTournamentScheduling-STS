@@ -41,7 +41,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
 
 1. Start the Docker engine.
 2. Move to `.../SportsTournamentScheduling-STS`
-3. Run the command:
+3. Open the **Bash Terminal** and Run the command:
 
    ```bash
    bash start.sh
@@ -61,7 +61,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
    ```bash
    docker build -t cmdo_img:latest .
 
-   docker run --rm -it -v $(pwd)/result/SAT/outputs:/app/outputs/SAT -v $(pwd)/result/CP/outputs:/app/outputs/CP -v $(pwd)/result/MIP/outputs:/app/outputs/MIP cmdo_img
+   docker run --rm -it -v ${PWD}\result\SAT\outputs:/app/outputs/SAT cmdo_img -v ${PWD}\result\CP\outputs:/app/outputs/CP cmdo_img -v ${PWD}\result\MIP\outputs:/app/outputs/MIP cmdo_img 
    
    ```
 4. Use the script menu as you prefer.
