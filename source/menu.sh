@@ -11,7 +11,7 @@ while true; do
     i=1
     keys=()
     for key in "${!scripts[@]}"; do
-        echo "$i. ${scripts[$key]}"
+        echo "$i. $key"
         keys[$i]=$key
         ((i++))
     done

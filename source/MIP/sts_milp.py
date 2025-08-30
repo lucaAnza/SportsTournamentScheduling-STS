@@ -218,11 +218,9 @@ runtime= end - start
 optimal = False
 if status == OptimizationStatus.OPTIMAL:
     optimal = True
-    print("Optimal solution found ✅ ")
-    print("Objective value:", m.objective_value)
+    print(f"Optimal solution found ✅ (opt = {m.objective_value})")
 elif status == OptimizationStatus.FEASIBLE:
-    print("Feasible solution found but not proven optimal ✅")
-    print("Objective value:", m.objective_value)
+    print(f"Feasible solution found but not proven optimal ✅ (opt = {m.objective_value})")
 else:
     print("No solution found.")
 

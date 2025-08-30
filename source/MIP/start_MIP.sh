@@ -18,7 +18,7 @@ while true; do
     elif [[ "$choice" == "1" ]]; then
         # Ask parameters
         read -rp "Enter number of teams (int): " team 
-        python $SCRIPT_DIR/sts_milp.py $team
+        python $SCRIPT_DIR/sts_milp.py $team docker
 
     else
         echo "Invalid option. Try again."
