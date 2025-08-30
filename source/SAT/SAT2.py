@@ -285,28 +285,6 @@ def visualize_solution_humanreadable(m, file_name=None):
     finally:
         if file_name: out.close()
 
-def visualize_solution_raw(m, file_name=None):
-    out = open(file_name, "w") if file_name else sys.stdout
-    try:
-        print(datetime.now(), file=out)
-        V = np.zeros((team, home, periods, weeks), dtype=int)
-        packed = pack_week_pairs_from_model(m)
-        for w in range(weeks):
-            for p, (h, a) in enumerate(packed[w]):
-                V[h, 1, p, w] = 1  # home team at (p,w)
-                V[a, 0, p, w] = 1  # away team at (p,w)
-        for t in range(team):
-            print(f"\n\n----------TEAM {t+1}----------", file=out)
-            for hh in range(home):
-                print(("away : " if hh == 0 else "home : "), file=out)
-                for p in range(periods):
-                    for w in range(weeks):
-                        print(int(V[t, hh, p, w]), end=" ", file=out)
-                    print(file=out)
-            print(f"-----------------------------", file=out)
-    finally:
-        if file_name: out.close()
-
 # ================================ MAIN =====================================
 solutions = import_json_solution(default_filename)
 
@@ -332,7 +310,6 @@ if res == sat:
         print("OPT Evaluation for this model (opt-disabled):", total)
     export_json_solution(solutions, default_filename)
     visualize_solution_humanreadable(m, file_name="human.txt")
-    visualize_solution_raw(m, file_name="raw.txt")
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
 print("-------------------------------------------------------------------------------------------------")
