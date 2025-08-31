@@ -119,6 +119,25 @@ Mark proven optima in \textbf{bold}. Use \texttt{UNSAT} if proven infeasible; us
 
 The SAT solution was made using two different modeling approaches. Both are included in the report. 
 
+\paragraph{Notation.}
+Throughout the constraints we use the following shorthand:
+
+\[
+\begin{aligned}
+\sum x_i \;\;\geq 1 &\quad\Longleftrightarrow\quad \text{``at least $k$ of the $x_i$ is true''}, \\[6pt]
+\sum x_i \;\;= 1   &\quad\Longleftrightarrow\quad \text{``exactly $k$ of the $x_i$ is true''}, \\[6pt]
+\sum x_i \;\;\leq k &\quad\Longleftrightarrow\quad \text{``at most $k$ of the $x_i$ are true''}.
+\end{aligned}
+\]
+
+In the implementation these correspond respectively to the encodings 
+\texttt{at\_least\_k}, \texttt{exactly\_k}, and \texttt{at\_most\_k}. The special cases with $k=1$ are captured by the usual constraints:
+$ \texttt{at\_least\_one}, 
+\texttt{at\_most\_one}, $ and $ 
+\texttt{exactly\_one}.
+$
+
+
 \subsection{Decision variables}
 
 \subsubsection{Model - 1}
@@ -183,7 +202,7 @@ home and away games for each team. Formally:
 
 \subsubsection{Model - 1 }
 
-\paragraph{Constraints.}
+\paragraph{Main constraints.}
 
 \begin{itemize}
 \item[(C1)] \textbf{Every pair of teams plays at most once.}  
@@ -234,35 +253,123 @@ To reduce symmetry, the matches for the first week / period are fixed:
 
 \subsubsection{Model - 2 }
 
-//TO DO!!!
+\paragraph{Main constraints.}
+
+\begin{itemize}
+\item[(C1)] \textbf{Each team plays with every other team only once;}
+\[
+\forall\, t_1<t_2:\qquad
+\sum_{w=1}^{W} M_{t_1,t_2,w} \;=\; 1.
+\]
+
+\item[(C2)] \textbf{Each team plays exactly once per week}
+\[
+\forall\, t,\,w:\qquad
+\sum_{p=1}^{P} P_{t,p,w} \;=\; 1.
+\]
+
+\item[(C3)] \textbf{Each team plays at most twice in the same period}
+\[
+\forall\, t,\,p:\qquad
+\sum_{w=1}^{W} P_{t,p,w} \;\le\; 2.
+\]
+
+\item[(C4)] \textbf{Each slot \((p,w)\) hosts exactly two teams.}
+\[
+\forall\, p,\,w:\qquad
+\sum_{t=1}^{T} P_{t,p,w} \;=\; 2.
+\]
+\end{itemize}
+
+\paragraph{Implied constraints.}
+
+\begin{itemize}
+\item[(C5)] \textbf{Home/away consistency when two teams meet in week \(w\).}
+\[
+\forall\, w,\, t_1<t_2:\qquad
+M_{t_1,t_2,w} \;\Rightarrow\; \big(HOME_{t_1,w} \oplus HOME_{t_2,w}\big).
+\]
+
+\item[(C6)] \textbf{Link between pair variables and period assignments.}
+\[
+\forall\, w,\, t_1<t_2:\qquad
+M_{t_1,t_2,w} \;\Rightarrow\; \bigvee_{p=1}^{P}\big(P_{t_1,p,w}\land P_{t_2,p,w}\big),
+\]
+\[
+\forall\, w,\,p,\, t_1<t_2:\qquad
+\big(P_{t_1,p,w}\land P_{t_2,p,w}\big) \;\Rightarrow\; M_{t_1,t_2,w}.
+\]
+(Equivalently: \(M_{t_1,t_2,w}\) iff the two teams share some period \(p\) in week \(w\).)
+\end{itemize}
+
+\paragraph{Simmetry breaking.}
+
+\begin{itemize}
+\item[(C7)] \textbf{Precomputed round-robin pruning.}
+Let \(\mathcal{R}_w\subseteq\{\{t_1,t_2\}\mid t_1<t_2\}\) be the fixed set of pairs for week \(w\) produced by the round-robin generator. Then:
+\[
+\forall\, w,\, t_1<t_2:\qquad
+M_{t_1,t_2,w} =
+\begin{cases}
+1, & \text{if }\{t_1,t_2\}\in \mathcal{R}_w,\\[4pt]
+0, & \text{otherwise.}
+\end{cases}
+\]
+\end{itemize}
 
 
+% === Validation ===
 
 \subsection{Validation}
 
-\paragraph{Implementation.}
-We implemented the model in Python using \texttt{Z3}:
-\begin{itemize}
-  \item Variables \(X_{t,h,p,w}\) as \texttt{Bool}s; constraints added as above.
-  \item Optional optimization via \texttt{Optimize()} minimizing the imbalance objective; otherwise \texttt{Solver()} for feasibility.
-  \item Human-readable and raw dumps (\texttt{human.txt}, \texttt{raw.txt}) and a structured JSON export (\texttt{solutions.json}) to support external checkers.
-\end{itemize}
+\paragraph{Experimental Setup} \mbox{}\\
+\\
+All experiments were conducted using the \texttt{Z3} solver for SAT and
+optimization. The implementation is provided in Python, and the solver is
+invoked through the \textbf{Z3 API}. 
+\\
+The experiments were run on two different operating systems, namely
+\emph{Windows} and \emph{Linux}, to ensure portability of the implementation.
+The hardware platform was a laptop equipped with a \textit{12th Gen
+Intel(R) Core(TM) i7-1280P} processor and an \textit{NVIDIA RTX-3060 GPU}. No GPU
+acceleration was employed for the SAT solving itself, which ran entirely on
+the CPU.  \\
+\\
+In order to reproduce the experiments, it is sufficient to follow the
+instructions provided in the accompanying \texttt{README.md} file, which
+details the installation steps and execution commands. The solver was run
+without a fixed time limit, but execution times were recorded as reported in
+the results section.
+\\
+For reproducibility, a fixed random seed (\texttt{SEED\_FOR\_REPRODUTION})
+can be set in the configuration. By default this seed is set to~0, meaning
+that Z3’s internal randomization is left free, but setting it to a positive
+integer ensures deterministic and repeatable runs across different executions
+and platforms.
 
-\paragraph{Checker.}
-From a model \(m\) we reconstruct the schedule and programmatically assert:
-(i) for all \(t,w\), exactly one \(X_{t,h,p,w}\) is true; 
-(ii) for all \(p,w\), exactly one home and one away team are selected; 
-(iii) for all \(t_1\!<\!t_2\), at most one slot has both \(t_1\) and \(t_2\); 
-(iv) the period cap (C4). We also recompute the objective from \(m\) to confirm the reported value.
 
-\paragraph{Swapping SAT solvers (if using a solver-independent format).}
-Our implementation talks directly to \texttt{Z3}. To run different SAT backends, one can emit:
-(i) CNF/DIMACS for the hard constraints (with the logarithmic \(\operatorname{AMO}\) and pairwise \(\operatorname{AMK}\) encodings), and 
-(ii) for optimization, either (a) an OPB/WBO file for PB MaxSAT/WBO solvers, or (b) an iterative SAT loop over a PB bound \(z\) using cardinality/adder encodings to express \(\sum_t | \cdot | \le z\).
-Swapping solvers then amounts to changing the external solver invoked on the generated file(s).
 
-\paragraph{Experimental protocol.}
-Same as CP: for \(T\in\{6,8,10,\dots\}\) we record initialization time, solve time, SAT/UNSAT/OPT status, and the objective value. Each instance uses \(W=T-1\), \(P=T/2\). We keep the period-cap (C4) enabled to reduce symmetry. For optimization runs we report the final objective; for feasibility runs we report the imbalance computed on the returned model.
+\paragraph{Experimental results} \mbox{}\\
+
+\begin{table}[h!]
+
+\label{tab:results}
+\begin{tabular}{c|c|c|c}
+\hline
+$N$ & Bitwise Encoding & Heule Encoding & Precomputing + Heule \\
+\hline
+6   & \textbf{0}  & \textbf{0}  & \textbf{0}  \\
+8   & 2           & \textbf{0}  & \textbf{0}  \\
+10  & 4           & 2           & \textbf{0}  \\
+12  & --          & 6           & \textbf{2}  \\
+14  & --          & --          & 4           \\
+16  & UNSAT       & UNSAT       & UNSAT       \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
 
 
 
@@ -301,15 +408,6 @@ Parts of this project (text/code/experiments) were assisted by AI tools where in
 MiniZinc: The Modeling Language,
 \url{https://www.minizinc.org/}.
 
-\bibitem{z3}
-de Moura, Leonardo, and Nikolaj Bj{\o}rner.
-Z3: An Efficient SMT Solver.
-\emph{TACAS} (2008).
-
-\bibitem{cvc5}
-Barbosa et al.
-cvc5: A Versatile and Industrial-Strength SMT Solver.
-\emph{CAV} (2022).
 
 \end{thebibliography}
 
