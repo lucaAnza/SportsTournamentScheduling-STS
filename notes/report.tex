@@ -25,7 +25,7 @@ Name Surname \texttt{name.surname@studio.unibo.it}
 \begin{document}
 \maketitle
 
-
+% TODO : DELETE PROF INTRO
 \section{Introduction}
 Briefly introduce the report (not the problem nor the generic methods).
 Describe and formalize what is common to all models:
@@ -33,15 +33,35 @@ inputs, symbols, shared objective variable and bounds, global pre-processing,
 and any assumptions.
 Refer back to this section from later sections to avoid repetition.
 
-% Example structure:
-\paragraph{Input.}
-Define the instance set, indices, and parameters (domains and meanings).
+\paragraph{Instance parameters}
+Let \(T\) be the number of teams (even), \(W=T-1\) the number of weeks, and \(P=T/2\) the number of periods (parallel timeslots) per week.
+Each solution is modeled referring to these three main variables.
 
-\paragraph{Shared objective variable.}
-Define $z \in \R$ (or $\Z$), its bounds, and interpretation.
+\begin{itemize}
+    \item Example1 : $ T = 6 \xrightarrow{} W = 4 $ and  $ P = 3 $
+    \item Example2 : $ T = 16 \xrightarrow{} W = 15 $ and  $ P = 8 $
+    \item Example3 : $ T = 5  \xrightarrow{} $ NOT VALID 
+\end{itemize}
 
-\paragraph{Pre-processing.}
-Summarize any reductions, dominance rules, or canonicalizations applied to all models.
+\paragraph{Objective function}
+
+The main optimization criterion is to achieve a balanced schedule,
+in which every team plays approximately the same number of home and away
+games. In particular, given the instance parameters 
+$T$ teams, $W$ weeks, and $P$ periods.
+The objective is to minimize the overall imbalance:
+
+\[
+\min \; \sum_{t=1}^{T} \Big| \; 
+\#\text{home\_games}(t) - \#\text{away\_games}(t) \; \Big|
+\]
+
+This formulation depends only on the instance parameters
+($T, W, P$) that define how many games each team must play,
+and expresses the high-level goal of fairness in the tournament.
+
+
+
 
 % ---------------- CP ----------------
 \section{CP Model}
@@ -96,38 +116,155 @@ Mark proven optima in \textbf{bold}. Use \texttt{UNSAT} if proven infeasible; us
 
 % ---------------- SAT ----------------
 \section{SAT Model}
-Mandatory for groups of 4; optional (alternative to SMT) for \(\le 3\) students.
+
+The SAT solution was made using two different modeling approaches. Both are included in the report. 
 
 \subsection{Decision variables}
-Define Boolean literals and their semantics (e.g., $\Delta_{i,j}$ true iff arc $i\!\to\! j$ is used).
+
+\subsubsection{Model - 1}
+
+\paragraph{Booleans}
+
+\begin{itemize}
+    \item  $ X_{t,h,p,w}\in\{0,1\} \quad\text{meaning team }t\text{ is scheduled with role }h\text{ in slot }(p,w). $
+\end{itemize}
+
+\subsubsection{Model - 2}
+
+\paragraph{Booleans}
+
+\begin{itemize}
+    \item  $ M_{t_1,t_2,w} \in \{0,1\} \quad\text{meaning teams $t_1$ and $t_2$ play against each other in week $w$}. $
+    \item $HOME_{t,w} \in \{0,1\} \quad\text{meaning team $t$ plays at home in week $w$ (away otherwise)}.$
+    \item $P_{t,p,w} \in \{0,1\} \quad\text{meaning team $t$ is assigned to period $p$ in week $w$}.$
+\end{itemize}
+
+
+\paragraph{Remarks.}
+
+Model--2 introduces explicit pair variables \(M_{t_1,t_2,w}\) to capture
+which two teams meet in a given week, home assignment variables
+\(HOME_{t,w}\) to distinguish roles, and period variables
+\(P_{t,p,w}\) to ensure consistency of scheduling. It also supports
+a \emph{precomputing} mode, where a round-robin structure is generated
+in advance and infeasible pairs are pruned by setting the corresponding
+\(M_{t_1,t_2,w}\) literals to false.
+
 
 \subsection{Objective function}
-Explain the optimization strategy in SAT (e.g., linear/binary search over $z$, PB encodings, cardinalities).
+
+\subsubsection{Model - 1}
+
+We minimize total home/away imbalance across teams:
+\[
+\min \;\; \sum_{t=1}^{T} \left| 
+\sum_{p=1}^{P}\sum_{w=1}^{W} \big( X_{t,0,p,w} - X_{t,1,p,w} \big)
+\right|.
+\]
+In the implementation with \texttt{Z3}, the optimization is performed by 
+\emph{iterative (binary) search} on a pseudo-Boolean bound \(z\). 
+At each step we introduce a constraint of the form 
+\(\sum_t \lvert \cdot \rvert \leq z\), encoded using cardinality 
+constraints, and solve for feasibility. If satisfiable, the bound 
+is tightened; otherwise the process stops at the last feasible value.
+
+\subsubsection{Model - 2 }
+
+As in Model--1, the optimization criterion is to balance the number of
+home and away games for each team. Formally:
+
+\[
+\min \sum_{t=1}^T \left| \sum_{w=1}^W HOME_{t,w}
+      - \Big(W - \sum_{w=1}^W HOME_{t,w}\Big) \right|.
+\]
+
 
 \subsection{Constraints}
-Describe clause encodings for each modeling component.
-State the main constraints first, then implied and symmetry-breaking encodings.
+
+\subsubsection{Model - 1 }
+
+\paragraph{Constraints.}
+
+\begin{itemize}
+\item[(C1)] \textbf{Every pair of teams plays at most once.}  
+For each distinct pair of teams $t_1,t_2 \in \{1,\dots,T\}$:
+\[
+\sum_{p=1}^{P}\sum_{w=1}^{W}
+\Big( \bigvee_{h\in\{0,1\}} X_{t_1,h,p,w} \;\;\land\;\;
+       \bigvee_{h\in\{0,1\}} X_{t_2,h,p,w} \Big)
+\;\;\leq 1.
+\]
+
+\item[(C2)] \textbf{Each team plays exactly once per week.}  
+For every team $t$ and week $w$:
+\[
+\sum_{h\in\{0,1\}}\sum_{p=1}^{P} X_{t,h,p,w} \;=\; 1.
+\]
+
+\item[(C3)] \textbf{Each team appears at most twice in the same period over the tournament.}  
+For every team $t$ and period $p$:
+\[
+\sum_{h\in\{0,1\}}\sum_{w=1}^{W} X_{t,h,p,w} \;\leq\; 2.
+\]
+\end{itemize}
+
+\paragraph{Implied constraints.}
+
+\begin{itemize}
+\item[(C4)] \textbf{Each game slot has exactly one home and one away team.}  
+For every period $p$ and week $w$:
+\[
+\sum_{t=1}^{T} X_{t,1,p,w} = 1
+\quad\text{and}\quad
+\sum_{t=1}^{T} X_{t,0,p,w} = 1.
+\]
+\end{itemize}
+
+\paragraph{Simmetry breaking.}
+
+\begin{itemize}
+\item[(C5)] {Fixing the first line of the schedule (symmetry-breaking).}  
+To reduce symmetry, the matches for the first week / period are fixed:
+\[
+\bigwedge_{t=1}^{T-1} \big( X_{t,0,1,t} \;\lor\; X_{t,1,1,t} \big)
+\quad\land\quad
+\big( X_{T,0,1,1} \;\lor\; X_{T,1,1,1} \big).
+\]
+\end{itemize}
+
+\subsubsection{Model - 2 }
+
+//TO DO!!!
+
+
 
 \subsection{Validation}
-Implement with at least \texttt{Z3}. If using a solver-independent format (e.g., \texttt{DIMACS}), note how you swap SAT solvers.
-Follow the same experimental design/results protocol as in CP.
 
-% ---------------- SMT ----------------
-\section{SMT Model}
-Mandatory for groups of 4; optional (alternative to SAT) for \(\le 3\) students.
+\paragraph{Implementation.}
+We implemented the model in Python using \texttt{Z3}:
+\begin{itemize}
+  \item Variables \(X_{t,h,p,w}\) as \texttt{Bool}s; constraints added as above.
+  \item Optional optimization via \texttt{Optimize()} minimizing the imbalance objective; otherwise \texttt{Solver()} for feasibility.
+  \item Human-readable and raw dumps (\texttt{human.txt}, \texttt{raw.txt}) and a structured JSON export (\texttt{solutions.json}) to support external checkers.
+\end{itemize}
 
-\subsection{Decision variables}
-List variables, their sorts, and the theory (e.g., \texttt{Int}, \texttt{Real}, \texttt{UF}, \texttt{BV}).
+\paragraph{Checker.}
+From a model \(m\) we reconstruct the schedule and programmatically assert:
+(i) for all \(t,w\), exactly one \(X_{t,h,p,w}\) is true; 
+(ii) for all \(p,w\), exactly one home and one away team are selected; 
+(iii) for all \(t_1\!<\!t_2\), at most one slot has both \(t_1\) and \(t_2\); 
+(iv) the period cap (C4). We also recompute the objective from \(m\) to confirm the reported value.
 
-\subsection{Objective function}
-State the objective consistent with Section~1 or differences here.
+\paragraph{Swapping SAT solvers (if using a solver-independent format).}
+Our implementation talks directly to \texttt{Z3}. To run different SAT backends, one can emit:
+(i) CNF/DIMACS for the hard constraints (with the logarithmic \(\operatorname{AMO}\) and pairwise \(\operatorname{AMK}\) encodings), and 
+(ii) for optimization, either (a) an OPB/WBO file for PB MaxSAT/WBO solvers, or (b) an iterative SAT loop over a PB bound \(z\) using cardinality/adder encodings to express \(\sum_t | \cdot | \le z\).
+Swapping solvers then amounts to changing the external solver invoked on the generated file(s).
 
-\subsection{Constraints}
-Provide the SMT formulation (theory-specific), with main, implied, and symmetry-breaking parts.
+\paragraph{Experimental protocol.}
+Same as CP: for \(T\in\{6,8,10,\dots\}\) we record initialization time, solve time, SAT/UNSAT/OPT status, and the objective value. Each instance uses \(W=T-1\), \(P=T/2\). We keep the period-cap (C4) enabled to reduce symmetry. For optimization runs we report the final objective; for feasibility runs we report the imbalance computed on the returned model.
 
-\subsection{Validation}
-Use \texttt{Z3} or \texttt{CVC5}. Solver-independent inputs (e.g., \texttt{SMT-LIB}) are encouraged.
-Report results as in CP.
+
 
 % ---------------- MIP ----------------
 \section{MIP Model}

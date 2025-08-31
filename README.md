@@ -81,5 +81,4 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 
 1. Populate /result
 2. Ask into CP script if is run from docker or not
-3. Add how to lunch from windows , how to lunch from linux
-4. Fix windows mount point
+3. Fix Optimize function. You cannot use Optimize()!!!
