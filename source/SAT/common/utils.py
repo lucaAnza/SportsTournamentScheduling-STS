@@ -1,18 +1,21 @@
 import datetime
 import sys
 import json
-import z3
+from z3 import *
 import time
 
 
 ################################# WRAP CLASS #########################################
 class ContextSolver():
     
-    def __init__(self , z3_model , team , vars , solution_filename):
+    def __init__(self , z3_model , team , vars , solution_filename , opt_enabled):
 
         if not(team % 2 == 0):
             raise ValueError("Team must be a non-negative integer")
 
+        self.opt_enabled = opt_enabled
+        self.obj = None
+        self.solve_time = -1
         self.model = z3_model
         self.team = team
         self.vars = vars
@@ -21,7 +24,6 @@ class ContextSolver():
         self.home = 2
         self.solution_filename = solution_filename
         self.data = self.import_json_solution()
-        
 
     def import_json_solution(self):
         try:
@@ -81,16 +83,48 @@ class ContextSolver():
         except Exception as e:
             print(f"Error writing JSON file: {e}")
 
+    def add_solution_json(self , solution_name = "myAlgorithm"):
+    
+        match = ['X','X']
+        
+        sol_list = []
+        for p in range(self.periods):
+            period_list = [] # Create one new period list
+            for w in range(self.weeks):
+                for t in range(self.team):
+                    if(z3.is_true(self.model[vars[t, 0, p, w]])):
+                        match[1] = t+1
+                    if(z3.is_true(self.model[vars[t, 1, p, w]])):
+                        match[0] = t+1
+                period_list.append(match)  # Insert one match
+                match = ['X','X']
+            sol_list.append(period_list)
+        
+        new_entry = {}
+        new_entry['sol'] = sol_list
+        new_entry['time']  = self.total_time
+        new_entry['optimal'] = self.opt_enabled
+        new_entry['obj'] = self.obj
+        self.data[solution_name] = new_entry
+
     def solve(self):
         start = time.perf_counter()
         sat_result = self.model.check()
         end = time.perf_counter()
-        solve_time = ((end-start))
+        self.solve_time = ((end-start))
+        self.obj = self.compute_obj_function()
 
         if(sat_result == z3.sat):
-            return (True , solve_time)
+            return True
         else:
-            return (False , solve_time)
+            return False
+        
+    def compute_obj_function(self):
+        vars = self.vars
+        team_imbalance = [Abs(Sum([ If(vars[t,0,p,w], 1, 0) - If(vars[t,1,p,w], 1, 0) for p in range(self.periods) for w in range(self.week) ])) for t in range(self.team)]
+        total_imbalance = Sum(team_imbalance)
+        obj = self.model.model().evaluate(total_imbalance)
+        return obj
     
 
 

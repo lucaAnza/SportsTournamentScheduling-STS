@@ -211,12 +211,11 @@ if(optimized_version):
 ################################# MAIN ###############################
 
 
-bitwise_model = ContextSolver(model , team , vars , default_filename)
-result , solve_time = bitwise_model.solve()
+bitwise_model = ContextSolver(model , team , vars , default_filename , opt_enabled=optimized_version)
 
-if( result ) :
-    print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {solve_time:.2f} = {(init_time+solve_time):.2f}s)")
-    print(bitwise_model.get_model_solution())
+
+if( bitwise_model.solve() ) :
+    print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {bitwise_model.solve_time:.2f} = {(init_time+bitwise_model.solve_time):.2f}s)")
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
 print("-------------------------------------------------------------------------------------------------")
