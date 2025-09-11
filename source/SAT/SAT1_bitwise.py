@@ -225,14 +225,6 @@ print("-------------------------------------------------------------------------
 
 
 
-"""solutions = add_solution_json(bitwise.model() , solutions , team , round(init_time+solve_time,2) , optimized_version , m.evaluate(total_imbalance).as_long() , f"bitwise(n={team})" + optimized_label)
-    if(optimized_version):
-        print("OPT Evaluation minium possible (opt-enabled) : " , bitwise.lower(h) )
-    else:
-        print("OPT Evaluation for this model (opt-disabled) : " , m.evaluate(total_imbalance) )"""
-
-
-
 
 
 
