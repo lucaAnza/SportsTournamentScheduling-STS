@@ -8,13 +8,14 @@ import time
 ################################# WRAP CLASS #########################################
 class ContextSolver():
     
-    def __init__(self , z3_model , team , vars , solution_filename , opt_enabled):
+    def __init__(self , z3_model , team , vars , solution_filename , init_time , opt_enabled):
 
         if not(team % 2 == 0):
             raise ValueError("Team must be a non-negative integer")
 
         self.opt_enabled = opt_enabled
         self.obj = None
+        self.init_time = init_time
         self.solve_time = -1
         self.model = z3_model
         self.team = team
@@ -83,18 +84,22 @@ class ContextSolver():
         except Exception as e:
             print(f"Error writing JSON file: {e}")
 
-    def add_solution_json(self , solution_name = "myAlgorithm"):
-    
+    def add_solution_json(self , solution_name ):
+        
+        if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
+        vars = self.vars
+        m = self.model.model()
+
         match = ['X','X']
         
         sol_list = []
         for p in range(self.periods):
             period_list = [] # Create one new period list
-            for w in range(self.weeks):
+            for w in range(self.week):
                 for t in range(self.team):
-                    if(z3.is_true(self.model[vars[t, 0, p, w]])):
+                    if(z3.is_true(m[vars[t, 0, p, w]])):
                         match[1] = t+1
-                    if(z3.is_true(self.model[vars[t, 1, p, w]])):
+                    if(z3.is_true(m[vars[t, 1, p, w]])):
                         match[0] = t+1
                 period_list.append(match)  # Insert one match
                 match = ['X','X']
@@ -102,9 +107,9 @@ class ContextSolver():
         
         new_entry = {}
         new_entry['sol'] = sol_list
-        new_entry['time']  = self.total_time
+        new_entry['time']  = round(self.solve_time + self.init_time,2)
         new_entry['optimal'] = self.opt_enabled
-        new_entry['obj'] = self.obj
+        new_entry['obj'] = (self.obj.as_long())
         self.data[solution_name] = new_entry
 
     def solve(self):
@@ -125,118 +130,12 @@ class ContextSolver():
         total_imbalance = Sum(team_imbalance)
         obj = self.model.model().evaluate(total_imbalance)
         return obj
-    
-
-
-
 ################################# WRAP CLASS #########################################
 
 
-################################# FUNCTIONS and CONSTANT ###############################
-solutions = {}
-
-def add_solution_json(m , data , team , total_time = 0 , optimal = False , obj = None , solution_name = "myAlgorithm"):
-    
-    # Define problem size
-    weeks   = team - 1
-    periods = team // 2
-    home  = 2  
 
 
-    match = ['X','X']
-    
-    sol_list = []
-    for p in range(periods):
-        period_list = [] # Create one new period list
-        for w in range(weeks):
-            for t in range(team):
-                if(z3.is_true(m[vars[t, 0, p, w]])):
-                    match[1] = t+1
-                if(z3.is_true(m[vars[t, 1, p, w]])):
-                    match[0] = t+1
-            period_list.append(match)  # Insert one match
-            match = ['X','X']
-        sol_list.append(period_list)
-    
-    new_entry = {}
-    new_entry['sol'] = sol_list
-    new_entry['time']  = total_time
-    new_entry['optimal'] = optimal
-    new_entry['obj'] = obj
-    data[solution_name] = new_entry
-
-    return data
-
-def import_json_solution(data , filename):
-    try:
-        with open(filename, "r") as f:
-            data = json.load(f)
-        return data
-    except FileNotFoundError:
-        print(f"File {filename} not found. Returning empty dictionary.")
-        return {} 
-    except Exception:
-        print(f"Error during file reading. Returning empty dictionary.") 
-        return {} 
-
-def export_json_solution_compact(data , filename):
-    try:
-        with open(filename, "w") as f:
-            json.dump(data, f, indent=4)
-    except Exception as e:
-        print(f"Error writing JSON file: {e}")
-
-def export_json_solution(data, team , filename, indent=4, compact_keys=("sol",)):
-    
-    # Define problem size
-    weeks   = team - 1
-    periods = team // 2
-    home  = 2 
-    
-    """Pretty-print JSON, but keep inner lists in `compact_keys` compact (like [1,2])"""
-    def write(obj, f, level=0, parent_key=None):
-        pad = " " * (level * indent)
-
-        if isinstance(obj, dict):
-            f.write("{\n")
-            items = list(obj.items())
-            for i, (k, v) in enumerate(items):
-                f.write(pad + " " * indent + json.dumps(k) + ": ")
-                write(v, f, level + 1, parent_key=k)
-                if i < len(items) - 1:
-                    f.write(",\n")
-            f.write("\n" + pad + "}")
-
-        elif isinstance(obj, list):
-            # special formatting for sol
-            if parent_key in compact_keys:
-                f.write("[\n")
-                for i, item in enumerate(obj):
-                    f.write(pad + " " * indent)
-                    # compact dump of each inner list
-                    f.write(json.dumps(item, separators=(",", ":")))
-                    if i < len(obj) - 1:
-                        f.write(",\n")
-                f.write("\n" + pad + "]")
-            else:
-                f.write("[\n")
-                for i, item in enumerate(obj):
-                    f.write(pad + " " * indent)
-                    write(item, f, level + 1, parent_key=None)
-                    if i < len(obj) - 1:
-                        f.write(",\n")
-                f.write("\n" + pad + "]")
-
-        else:
-            f.write(json.dumps(obj))
-
-    try:
-        with open(filename, "w") as f:
-            write(data, f, 0)
-            f.write("\n")
-    except Exception as e:
-        print(f"Error writing JSON file: {e}")
-
+################################# I/O FUNCTIONS #########################################
 def visualize_solution_raw(m, team ,  file_name=None):
     
     # Define problem size
@@ -312,4 +211,4 @@ def visualize_solution_humanreadable(m, team , file_name=None):
     finally:
         if file_name:
             f.close()
-################################# FUNCTIONS and CONSTANT ###############################
+################################# I/O FUNCTIONS #########################################
