@@ -8,44 +8,12 @@ import sys
 from common.utils import *
 
 
-################################# SETTINGS ###############################
+################################# PARAMETERS ###############################
 team = 6  # default
-optimized_version = False
-script_filename = 'solutions.json'               # Name if this script is executed for debugging
+script_filename = 'solutions.json'                   # Name if this script is executed for debugging
 docker_filename = '/app/outputs/SAT/solutions.json'  # Name if this script is executed from docker script
-optimized_label = 'Optimized'
-################################# SETTINGS ###############################
-
-
-
-################################# SHELL PARAMS ###############################
-default_filename = script_filename
-if len(sys.argv) >= 3:
-    # Read from command line
-    team = int(sys.argv[1])
-    yn = sys.argv[2].lower()
-    if len(sys.argv) >= 4 and sys.argv[3] == 'docker':
-        default_filename = docker_filename
-    if yn in ('y', 'yes', 'true', '1'):
-        optimized_version = True
-else:
-    # Interactive input
-    team = int(input("\nHow many teams do you want ? "))
-    temp = input("Do you want optimized version ? (y/n) ")
-    if temp.lower() in ('y', 'yes'):
-        optimized_version = True
-    temp = input("Are you executing this file using docker ? (y/n) ")
-    if temp.lower() in ('y', 'yes'):
-        default_filename = docker_filename
-
-# Derivated params
-weeks = team-1
-if(team % 2 == 0 ):
-    periods = team//2
-else:
-    print("ERROR : Team must be even!")
-home = 2
-################################# SHELL PARAMS ###############################
+team , weeks , periods , home , default_filename , optimized_version = get_user_settings(sys.argv , docker_filename , script_filename)
+################################# PARAMETERS ###############################
 
 
 

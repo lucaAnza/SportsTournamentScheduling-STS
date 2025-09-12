@@ -136,6 +136,34 @@ class ContextSolver():
 
 
 ################################# I/O FUNCTIONS #########################################
+def get_user_settings(argv , docker_filename , script_filename):
+    default_filename = script_filename
+    optimized_version = False
+    if len(argv) >= 3:
+        # Read from command line
+        team = int(argv[1])
+        yn = sys.argv[2].lower()
+        if len(argv) >= 4 and argv[3] == 'docker':
+            default_filename = docker_filename
+        if yn in ('y', 'yes', 'true', '1'):
+            optimized_version = True
+    else:
+        # Interactive input
+        team = int(input("\nHow many teams do you want ? "))
+        temp = input("Do you want optimized version ? (y/n) ")
+        if temp.lower() in ('y', 'yes'):
+            optimized_version = True
+        temp = input("Are you executing this file using docker ? (y/n) ")
+        if temp.lower() in ('y', 'yes'):
+            default_filename = docker_filename
+
+    weeks = team-1
+    periods = team//2
+    home = 2
+
+    return team , weeks , periods , home , default_filename , optimized_version
+
+
 def visualize_solution_raw(m, team ,  file_name=None):
     
     # Define problem size
