@@ -12,7 +12,7 @@ from common.utils import *
 team = 6  # default
 script_filename = 'solutions.json'                   # Name if this script is executed for debugging
 docker_filename = '/app/outputs/SAT/solutions.json'  # Name if this script is executed from docker script
-team , weeks , periods , home , default_filename , optimized_version = get_user_settings(sys.argv , docker_filename , script_filename)
+team , weeks , periods , home , default_filename , optimized_version , _ = get_user_settings(sys.argv , docker_filename , script_filename)
 ################################# PARAMETERS ###############################
 
 
