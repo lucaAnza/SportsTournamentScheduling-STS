@@ -4,6 +4,7 @@ from z3 import *
 import numpy as np
 from datetime import datetime
 import json, sys, time
+from common.utils import *
 
 # =============================== CONFIG ===================================
 SEED_FOR_REPRODUTION = 0       # set to 0 for default; >0 for reproduce an attempt
@@ -153,35 +154,35 @@ start1 = time.perf_counter()
 M = [[[Bool(f"M_{t1}_{t2}_w{w}") for w in range(weeks)] for t2 in range(team)] for t1 in range(team)] # t1,t2 plays in week w
 HOME = [[Bool(f"HOME_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is home in week w
 P = [[[Bool(f"P_t{t}_p{p}_w{w}") for w in range(weeks)] for p in range(periods)] for t in range(team)] # team t is assigned to period p in week w
-S = Optimize() if optimized_version else Solver()
+model = Optimize() if optimized_version else Solver()
 # ============================== CONSTRAINTS ================================
 
 # Constraint 1 : every team plays with every other team only once;
 for t1 in range(team):
     for t2 in range(t1 + 1, team):
-        S.add(PbEq([(M[t1][t2][w], 1) for w in range(weeks)], 1))
+        model.add(PbEq([(M[t1][t2][w], 1) for w in range(weeks)], 1))
 
 # Constraint2 : each team play exactly one per week: sum over p of P[t][p][w] == 1
 for w in range(weeks):
     for t in range(team):
         # S.add(PbEq([(P[t][p][w], 1) for p in range(periods)], 1))   # SAT translation of x1​+x2​+x3​ = 1 (PbEq also enabled weight 3x1 + 4x2 + ...)
-        S.add(exactly_k([P[t][p][w] for p in range(periods)], 1))   # TODO : use exactly one of sequential,heule,bitwise
+        model.add(exactly_k([P[t][p][w] for p in range(periods)], 1))   # TODO : use exactly one of sequential,heule,bitwise
 
 # Constraint3 : each team plays two per period : sum over weeks of P[t][p][w] <= 2
 for t in range(team):
     for p in range(periods):
-        S.add(PbLe([(P[t][p][w], 1) for w in range(weeks)], 2))
+        model.add(PbLe([(P[t][p][w], 1) for w in range(weeks)], 2))
 
 # Constraint4 : Home/away consistency: when (t1,t2) plays in w, HOME differs
 for w in range(weeks):
     for t1 in range(team):
         for t2 in range(t1 + 1, team):
-            S.add(Implies(M[t1][t2][w], Xor(HOME[t1][w], HOME[t2][w])))
+            model.add(Implies(M[t1][t2][w], Xor(HOME[t1][w], HOME[t2][w])))
 
 # Constraint5 : Each game is played by 2 team : sum over t of P[t][p][w] == 2
 for w in range(weeks):
     for p in range(periods):
-        S.add(PbEq([(P[t][p][w], 1) for t in range(team)], 2))     # SAT translation of x1​+x2​+x3​ =2 (PbEq also enabled weight 3x1 + 4x2 + ...)
+        model.add(PbEq([(P[t][p][w], 1) for t in range(team)], 2))     # SAT translation of x1​+x2​+x3​ =2 (PbEq also enabled weight 3x1 + 4x2 + ...)
         # S.add(exactly_k([P[t][p][w] for t in range(team)], 2))     # TODO : use exactly k of sequential 
 
 
@@ -190,11 +191,11 @@ for w in range(weeks):
     for t1 in range(team):
         for t2 in range(t1 + 1, team):
             # If the pair plays in week w, they share exactly one period
-            S.add(Implies(M[t1][t2][w], Or([And(P[t1][p][w], P[t2][p][w]) for p in range(periods)])))
+            model.add(Implies(M[t1][t2][w], Or([And(P[t1][p][w], P[t2][p][w]) for p in range(periods)])))
             
             # If two teams share (period p, week w), then that (t1,t2) is the match that week
             for p in range(periods):
-                S.add(Implies(And(P[t1][p][w], P[t2][p][w]), M[t1][t2][w]))
+                model.add(Implies(And(P[t1][p][w], P[t2][p][w]), M[t1][t2][w]))
 
 # ================================ PRECOMPUTING ==================================
 if precomputing_version:
@@ -231,7 +232,7 @@ for t in range(2):
 total_imbalance = Sum(team_imbalance)
 
 if optimized_version:
-    h = S.minimize(total_imbalance)
+    h = model.minimize(total_imbalance)
 else:
     optimized_label = ''
     
@@ -285,7 +286,24 @@ def visualize_solution_humanreadable(m, file_name=None):
     finally:
         if file_name: out.close()
 
-# ================================ MAIN =====================================
+
+
+################################# MAIN ###############################
+sequential_model = ContextSolver(model , team , vars , default_filename , init_time , opt_enabled=optimized_version)
+
+
+if( sequential_model.solve() ) :
+    print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {sequential_model.solve_time:.2f} = {(init_time+sequential_model.solve_time):.2f}s)")
+    print("obj : " , sequential_model.compute_obj_function())
+    sequential_model.add_solution_json(solution_name=f'SAT1-bitwise(n={team})')
+    sequential_model.export_json_solution()
+else:
+    print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
+print("-------------------------------------------------------------------------------------------------")
+################################# MAIN ###############################
+
+
+"""# ================================ MAIN =====================================
 solutions = import_json_solution(default_filename)
 
 start = time.perf_counter()
@@ -312,4 +330,4 @@ if res == sat:
     visualize_solution_humanreadable(m, file_name="human.txt")
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
-print("-------------------------------------------------------------------------------------------------")
+print("-------------------------------------------------------------------------------------------------")"""

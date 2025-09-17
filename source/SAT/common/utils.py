@@ -3,12 +3,13 @@ import sys
 import json
 from z3 import *
 import time
+from abc import abstractmethod
 
 
 ################################# WRAP CLASS #########################################
 class ContextSolver():
     
-    def __init__(self , z3_model , team , vars , solution_filename , init_time , opt_enabled):
+    def __init__(self , z3_model , team , solution_filename , init_time , opt_enabled):
 
         if not(team % 2 == 0):
             raise ValueError("Team must be a non-negative integer")
@@ -19,7 +20,6 @@ class ContextSolver():
         self.solve_time = -1
         self.model = z3_model
         self.team = team
-        self.vars = vars
         self.week = self.team - 1
         self.periods = self.team // 2
         self.home = 2
@@ -84,6 +84,42 @@ class ContextSolver():
         except Exception as e:
             print(f"Error writing JSON file: {e}")
 
+    @abstractmethod
+    def add_solution_json(self, solution_name):
+        # TO IMPLEMENT IN SUBCLASS
+        pass
+
+    def solve(self):
+        start = time.perf_counter()
+        sat_result = self.model.check()
+        end = time.perf_counter()
+        self.solve_time = ((end-start))
+        self.obj = self.compute_obj_function()
+
+        if(sat_result == z3.sat):
+            return True
+        else:
+            return False
+    
+    @abstractmethod
+    def compute_obj_function(self):
+        # TO IMPLEMENT IN SUBCLASS
+        pass
+    
+
+class SAT1(ContextSolver):
+
+    def __init__(self , z3_model , team , vars , solution_filename , init_time , opt_enabled):
+        self.vars = vars
+        super().__init__(z3_model , team , solution_filename , init_time , opt_enabled )
+
+    def compute_obj_function(self):
+        vars = self.vars
+        team_imbalance = [Abs(Sum([ If(vars[t,0,p,w], 1, 0) - If(vars[t,1,p,w], 1, 0) for p in range(self.periods) for w in range(self.week) ])) for t in range(self.team)]
+        total_imbalance = Sum(team_imbalance)
+        obj = self.model.model().evaluate(total_imbalance)
+        return obj
+    
     def add_solution_json(self , solution_name ):
         
         if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
@@ -112,24 +148,40 @@ class ContextSolver():
         new_entry['obj'] = (self.obj.as_long())
         self.data[solution_name] = new_entry
 
-    def solve(self):
-        start = time.perf_counter()
-        sat_result = self.model.check()
-        end = time.perf_counter()
-        self.solve_time = ((end-start))
-        self.obj = self.compute_obj_function()
+# TODO : Finish to implement this class and test SAT1
+class SAT2(ContextSolver):
 
-        if(sat_result == z3.sat):
-            return True
-        else:
-            return False
-        
-    def compute_obj_function(self):
-        vars = self.vars
-        team_imbalance = [Abs(Sum([ If(vars[t,0,p,w], 1, 0) - If(vars[t,1,p,w], 1, 0) for p in range(self.periods) for w in range(self.week) ])) for t in range(self.team)]
-        total_imbalance = Sum(team_imbalance)
-        obj = self.model.model().evaluate(total_imbalance)
-        return obj
+    def __init__(self , z3_model , team , M , HOME , P, solution_filename , init_time , opt_enabled):
+        self.M = M
+        self.HOME = HOME
+        self.P = P
+        super().__init__(z3_model , team , solution_filename , init_time , opt_enabled )
+
+    def pack_week_pairs_from_model(self , model):
+        """For each week, return a list of (home_team, away_team) ordered by period p=0..periods-1."""
+        weeks_pairs = [[] for _ in range(self.week)]
+        for w in range(self.week):
+            for p in range(self.periods):
+                teams_here = [t for t in range(self.team) if is_true(model[P[t][p][w]])]
+                assert len(teams_here) == 2, f"Week {w}, period {p} does not have exactly 2 teams."
+                t1, t2 = teams_here[0], teams_here[1]
+                h1 = is_true(model[self.HOME[t1][w]])
+                h2 = is_true(model[self.HOME[t2][w]])
+                home_team = t1 if h1 else t2
+                away_team = t2 if h1 else t1
+                weeks_pairs[w].append((home_team, away_team))
+        return weeks_pairs
+
+    def add_solution_json(self , solution_name):
+        # Build a periods×weeks array of matches [home,away] using the model
+        sol_list = [[['X', 'X'] for _ in range(self.week)] for __ in range(self.periods)]
+        packed = self.pack_week_pairs_from_model(m)  # per week: list of (home, away) following period order
+        for w in range(self.week):
+            for p, (h, a) in enumerate(packed[w]):
+                sol_list[p][w] = [h + 1, a + 1]  # 1-based
+        new_entry = {'sol': sol_list, 'time': self.total_time, 'optimal': self.optimal, 'obj': self.obj}
+        self.data[solution_name] = new_entry
+        return self.data
 ################################# WRAP CLASS #########################################
 
 
