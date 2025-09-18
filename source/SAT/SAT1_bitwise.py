@@ -177,8 +177,7 @@ if(optimized_version):
 
 
 ################################# MAIN ###############################
-# TODO : Change ContextSolver into SAT1
-bitwise_model = ContextSolver(model , team , vars , default_filename , init_time , opt_enabled=optimized_version)
+bitwise_model = SAT1(model , team , vars , default_filename , init_time , opt_enabled=optimized_version)
 
 
 if( bitwise_model.solve() ) :

@@ -35,7 +35,12 @@ while true; do
         # Run all programs with parameters
         for prog in "${programs[@]}"; do
             if [[ -f "$prog" ]]; then
-                python3 "$prog" "$team" "$yn" "docker" "y"
+                if [ $yn == "y" ]; then
+                    python3 "$prog" "$team" "--optimized" "--docker" "--precomputing"
+                else
+                    python3 "$prog" "$team" "--docker" "--precomputing"
+                fi
+                
             else
                 echo "Error: file not found -> $prog"
             fi

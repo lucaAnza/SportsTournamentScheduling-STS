@@ -167,7 +167,6 @@ print(f"Init finished! ({init_time:.2f}s)")
 
 
 ################################# MAIN ###############################
-# TODO : Change ContextSolver into SAT1
 sequential_model = SAT1(model , team , vars , default_filename , init_time , opt_enabled=optimized_version)
 
 

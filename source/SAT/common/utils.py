@@ -4,6 +4,7 @@ import json
 from z3 import *
 import time
 from abc import abstractmethod
+import argparse
 
 
 ################################# WRAP CLASS #########################################
@@ -118,7 +119,7 @@ class SAT1(ContextSolver):
         team_imbalance = [Abs(Sum([ If(vars[t,0,p,w], 1, 0) - If(vars[t,1,p,w], 1, 0) for p in range(self.periods) for w in range(self.week) ])) for t in range(self.team)]
         total_imbalance = Sum(team_imbalance)
         obj = self.model.model().evaluate(total_imbalance)
-        return obj
+        return obj.as_long()
     
     def add_solution_json(self , solution_name ):
         
@@ -145,7 +146,7 @@ class SAT1(ContextSolver):
         new_entry['sol'] = sol_list
         new_entry['time']  = round(self.solve_time + self.init_time,2)
         new_entry['optimal'] = self.opt_enabled
-        new_entry['obj'] = (self.obj.as_long())
+        new_entry['obj'] = (self.obj)
         self.data[solution_name] = new_entry
 
 # TODO : Finish to implement this class and test SAT1
@@ -157,12 +158,12 @@ class SAT2(ContextSolver):
         self.P = P
         super().__init__(z3_model , team , solution_filename , init_time , opt_enabled )
 
-    def pack_week_pairs_from_model(self , model):
+    def pack_week_pairs_from_model(self , model : ModelRef):
         """For each week, return a list of (home_team, away_team) ordered by period p=0..periods-1."""
         weeks_pairs = [[] for _ in range(self.week)]
         for w in range(self.week):
             for p in range(self.periods):
-                teams_here = [t for t in range(self.team) if is_true(model[P[t][p][w]])]
+                teams_here = [t for t in range(self.team) if is_true(model[self.P[t][p][w]])]
                 assert len(teams_here) == 2, f"Week {w}, period {p} does not have exactly 2 teams."
                 t1, t2 = teams_here[0], teams_here[1]
                 h1 = is_true(model[self.HOME[t1][w]])
@@ -172,14 +173,23 @@ class SAT2(ContextSolver):
                 weeks_pairs[w].append((home_team, away_team))
         return weeks_pairs
 
+    def compute_obj_function(self):
+        team_imbalance = []
+        for t in range(2):
+            homes = Sum([If(self.HOME[t][w], 1, 0) for w in range(self.week)])
+            team_imbalance.append(Abs(homes - (self.week - homes)))
+        total_imbalance = Sum(team_imbalance)
+        obj = self.model.model().evaluate(total_imbalance)
+        return obj.as_long()
+
     def add_solution_json(self , solution_name):
         # Build a periods×weeks array of matches [home,away] using the model
         sol_list = [[['X', 'X'] for _ in range(self.week)] for __ in range(self.periods)]
-        packed = self.pack_week_pairs_from_model(m)  # per week: list of (home, away) following period order
+        packed = self.pack_week_pairs_from_model(self.model.model())  # per week: list of (home, away) following period order
         for w in range(self.week):
             for p, (h, a) in enumerate(packed[w]):
                 sol_list[p][w] = [h + 1, a + 1]  # 1-based
-        new_entry = {'sol': sol_list, 'time': self.total_time, 'optimal': self.optimal, 'obj': self.obj}
+        new_entry = {'sol': sol_list, 'time': self.init_time + self.solve_time, 'optimal': self.opt_enabled, 'obj': self.obj}
         self.data[solution_name] = new_entry
         return self.data
 ################################# WRAP CLASS #########################################
@@ -188,40 +198,43 @@ class SAT2(ContextSolver):
 
 
 ################################# I/O FUNCTIONS #########################################
-def get_user_settings(argv , docker_filename , script_filename):
-    # Variable init
-    default_filename = script_filename
-    optimized_version = False
-    precomputing_version = False
+def _yes(prompt: str) -> bool:
+    return input(prompt).strip().lower() in ("y", "yes", "true", "1")
 
-    # Terminal params
-    if len(sys.argv) >= 3:
-        team = int(sys.argv[1])
-        yn = sys.argv[2].lower()
-        if yn in ('y', 'yes', 'true', '1'):
-            optimized_version = True
-        if len(sys.argv) >= 4 and sys.argv[3] == 'docker':
-            default_filename = docker_filename
-        if len(sys.argv) == 5 and sys.argv[4].lower() in ('y', 'yes', 'true', '1'):
-            precomputing_version = True
-    # User input
-    else:
+def get_user_settings(argv, docker_filename, script_filename):
+    parser = argparse.ArgumentParser(
+        prog="scheduler",
+        description="Sports Tournament Scheduler settings"
+    )
+    
+    # team is optional on the CLI; if omitted we fall back to interactive prompts
+    parser.add_argument("team", type=int, nargs="?", help="Number of teams")
+    parser.add_argument("--optimized", action="store_true", help="Look for the optimal solution")
+    parser.add_argument("--docker", action="store_true", help="Needed for using the right path")
+    parser.add_argument("--precomputing", action="store_true", help="Enable precomputing version")
+
+    # Parse given argv (expects full sys.argv-like list)
+    args = parser.parse_args(argv[1:])
+
+    # Interactive fallback if team was not provided
+    if args.team is None:
         team = int(input("\nHow many teams do you want ? "))
-        temp = input("Do you want optimized version ? (y/n) ")
-        if temp.lower() in ('y', 'yes'):
-            optimized_version = True
-        temp = input("Are you executing this file using docker ? (y/n) ")
-        if temp.lower() in ('y', 'yes'):
-            default_filename = docker_filename
-        temp = input("Do you want precomputing version ? (y/n) ")
-        if temp.lower() in ('y', 'yes'):
-            precomputing_version = True
+        optimized_version = _yes("Do you want optimized version ? (y/n) ")
+        docker_mode = _yes("Are you executing this file using docker ? (y/n) ")
+        precomputing_version = _yes("Do you want precomputing version ? (y/n) ")
+    else:
+        team = args.team
+        optimized_version = args.optimized
+        docker_mode = args.docker
+        precomputing_version = args.precomputing
 
-    weeks = team-1
-    periods = team//2
+    # Derivated variables
+    default_filename = docker_filename if docker_mode else script_filename
+    weeks = team - 1
+    periods = team // 2
     home = 2
 
-    return team , weeks , periods , home , default_filename , optimized_version , precomputing_version
+    return team, weeks, periods, home, default_filename, optimized_version, precomputing_version
 
 
 def visualize_solution_raw(m, team ,  file_name=None):
