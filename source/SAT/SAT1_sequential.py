@@ -171,9 +171,9 @@ sequential_model = SAT1(model , team , vars , default_filename , init_time , opt
 
 
 if( sequential_model.solve() ) :
-    print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {sequential_model.solve_time:.2f} = {(init_time+sequential_model.solve_time):.2f}s)")
+    print(f"SAT1-SEQUENTIAL : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {sequential_model.solve_time:.2f} = {(init_time+sequential_model.solve_time):.2f}s)")
     print("obj : " , sequential_model.compute_obj_function())
-    sequential_model.add_solution_json(solution_name=f'SAT1-bitwise(n={team})')
+    sequential_model.add_solution_json(solution_name=f'SAT1-sequential(n={team})')
     sequential_model.export_json_solution()
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")

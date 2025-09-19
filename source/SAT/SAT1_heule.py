@@ -133,9 +133,9 @@ heule_model = SAT1(model , team , vars , default_filename , init_time , opt_enab
 
 
 if( heule_model.solve() ) :
-    print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {heule_model.solve_time:.2f} = {(init_time+heule_model.solve_time):.2f}s)")
+    print(f"SAT1-HEULE : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {heule_model.solve_time:.2f} = {(init_time+heule_model.solve_time):.2f}s)")
     print("obj : " , heule_model.compute_obj_function())
-    heule_model.add_solution_json(solution_name=f'SAT1-bitwise(n={team})')
+    heule_model.add_solution_json(solution_name=f'SAT1-heule(n={team})')
     heule_model.export_json_solution()
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")

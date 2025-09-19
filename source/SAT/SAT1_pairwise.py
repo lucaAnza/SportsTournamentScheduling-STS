@@ -129,9 +129,9 @@ pairwise_model = SAT1(model , team , vars , default_filename , init_time , opt_e
 
 
 if( pairwise_model.solve() ) :
-    print(f"The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {pairwise_model.solve_time:.2f} = {(init_time+pairwise_model.solve_time):.2f}s)")
+    print(f"SAT1-PAIRWISE : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {pairwise_model.solve_time:.2f} = {(init_time+pairwise_model.solve_time):.2f}s)")
     print("obj : " , pairwise_model.compute_obj_function())
-    pairwise_model.add_solution_json(solution_name=f'SAT1-bitwise(n={team})')
+    pairwise_model.add_solution_json(solution_name=f'SAT1-pairwise(n={team})')
     pairwise_model.export_json_solution()
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
