@@ -10,7 +10,7 @@ import argparse
 ################################# WRAP CLASS #########################################
 class ContextSolver():
     
-    def __init__(self , z3_model , team , solution_filename , init_time , opt_enabled):
+    def __init__(self , z3_solver , team , solution_filename , init_time , opt_enabled):
 
         if not(team % 2 == 0):
             raise ValueError("Team must be a non-negative integer")
@@ -19,7 +19,8 @@ class ContextSolver():
         self.obj = None
         self.init_time = init_time
         self.solve_time = -1
-        self.model = z3_model
+        self.solver = z3_solver  # Solver
+        self.model = None        # ModelRef
         self.team = team
         self.week = self.team - 1
         self.periods = self.team // 2
@@ -91,13 +92,27 @@ class ContextSolver():
         pass
 
     def solve(self):
-        start = time.perf_counter()
-        sat_result = self.model.check()
-        end = time.perf_counter()
+        start = time.perf_counter() # -----------------------------------------------------------------------------TIME(START)
+        find_one_at_least_one_solution = False
+        sat_result = self.solver.check()   # Start the SAT search and fill the variable model with the solution (ModelRef)
+        if(self.opt_enabled):
+            temp_solver = self.solver.copy()
+            while sat_result == sat:
+                find_one_at_least_one_solution = True
+                temp_obj = self.compute_obj_function()
+                self.model = self.solver.model()
+                # forbid this value and any worse (strictly improve):
+                temp_solver.add(temp_obj <= temp_obj - 1)
+                sat_result = temp_solver.check()
+        else:
+            if(sat_result == z3.sat): 
+                find_one_at_least_one_solution = True
+                self.model = self.solver.model()
+                self.obj = self.compute_obj_function()
+        end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
         self.solve_time = ((end-start))
-        self.obj = self.compute_obj_function()
-
-        if(sat_result == z3.sat):
+            
+        if(find_one_at_least_one_solution):
             return True
         else:
             return False
@@ -110,23 +125,22 @@ class ContextSolver():
 
 class SAT1(ContextSolver):
 
-    def __init__(self , z3_model , team , vars , solution_filename , init_time , opt_enabled):
+    def __init__(self , z3_solver , team , vars , solution_filename , init_time , opt_enabled):
         self.vars = vars
-        super().__init__(z3_model , team , solution_filename , init_time , opt_enabled )
+        super().__init__(z3_solver , team , solution_filename , init_time , opt_enabled )
 
     def compute_obj_function(self):
         vars = self.vars
         team_imbalance = [Abs(Sum([ If(vars[t,0,p,w], 1, 0) - If(vars[t,1,p,w], 1, 0) for p in range(self.periods) for w in range(self.week) ])) for t in range(self.team)]
         total_imbalance = Sum(team_imbalance)
-        obj = self.model.model().evaluate(total_imbalance)
+        obj = self.model.evaluate(total_imbalance)
         return obj.as_long()
     
     def add_solution_json(self , solution_name ):
         
         if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
         vars = self.vars
-        m = self.model.model()
-
+        
         match = ['X','X']
         
         sol_list = []
@@ -134,9 +148,9 @@ class SAT1(ContextSolver):
             period_list = [] # Create one new period list
             for w in range(self.week):
                 for t in range(self.team):
-                    if(z3.is_true(m[vars[t, 0, p, w]])):
+                    if(z3.is_true(self.model[vars[t, 0, p, w]])):
                         match[1] = t+1
-                    if(z3.is_true(m[vars[t, 1, p, w]])):
+                    if(z3.is_true(self.model[vars[t, 1, p, w]])):
                         match[0] = t+1
                 period_list.append(match)  # Insert one match
                 match = ['X','X']
@@ -152,11 +166,11 @@ class SAT1(ContextSolver):
 # TODO : Finish to implement this class and test SAT1
 class SAT2(ContextSolver):
 
-    def __init__(self , z3_model , team , M , HOME , P, solution_filename , init_time , opt_enabled):
+    def __init__(self , z3_solver , team , M , HOME , P, solution_filename , init_time , opt_enabled):
         self.M = M
         self.HOME = HOME
         self.P = P
-        super().__init__(z3_model , team , solution_filename , init_time , opt_enabled )
+        super().__init__(z3_solver , team , solution_filename , init_time , opt_enabled )
 
     def pack_week_pairs_from_model(self , model : ModelRef):
         """For each week, return a list of (home_team, away_team) ordered by period p=0..periods-1."""
@@ -179,13 +193,13 @@ class SAT2(ContextSolver):
             homes = Sum([If(self.HOME[t][w], 1, 0) for w in range(self.week)])
             team_imbalance.append(Abs(homes - (self.week - homes)))
         total_imbalance = Sum(team_imbalance)
-        obj = self.model.model().evaluate(total_imbalance)
+        obj = self.solver.model().evaluate(total_imbalance)
         return obj.as_long()
 
     def add_solution_json(self , solution_name):
         # Build a periods×weeks array of matches [home,away] using the model
         sol_list = [[['X', 'X'] for _ in range(self.week)] for __ in range(self.periods)]
-        packed = self.pack_week_pairs_from_model(self.model.model())  # per week: list of (home, away) following period order
+        packed = self.pack_week_pairs_from_model(self.solver.model())  # per week: list of (home, away) following period order
         for w in range(self.week):
             for p, (h, a) in enumerate(packed[w]):
                 sol_list[p][w] = [h + 1, a + 1]  # 1-based
