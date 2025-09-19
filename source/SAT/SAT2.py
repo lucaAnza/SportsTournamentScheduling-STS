@@ -80,7 +80,7 @@ start1 = time.perf_counter()
 M = [[[Bool(f"M_{t1}_{t2}_w{w}") for w in range(weeks)] for t2 in range(team)] for t1 in range(team)] # t1,t2 plays in week w
 HOME = [[Bool(f"HOME_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is home in week w
 P = [[[Bool(f"P_t{t}_p{p}_w{w}") for w in range(weeks)] for p in range(periods)] for t in range(team)] # team t is assigned to period p in week w
-model = Optimize() if optimized_version else Solver()
+model = Solver()
 # ============================== CONSTRAINTS ================================
 
 # Constraint 1 : every team plays with every other team only once;

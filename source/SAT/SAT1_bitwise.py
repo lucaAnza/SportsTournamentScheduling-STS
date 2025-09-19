@@ -81,11 +81,7 @@ for t in range(0,team):
 
 print("-------------------------------------------------------------------------------------------------")
 
-if(optimized_version):
-    model = Optimize()  # Use Solver() if you don't use optimization function
-else:
-    model = Solver()
-    optimized_label = ''
+solver = Solver()
 ################################# DOMAIN DEFINITION ###############################
 
 
@@ -101,7 +97,7 @@ for t1 in range(0,team):
                     t_i = Or(list(vars[t1,:,p,w].flatten()))
                     t_j = Or(list(vars[t2,:,p,w].flatten()))
                     clauses.append(And(t_i , t_j))
-            model.add(at_most_one_bitwise(clauses , name = f't{t1}t{t2}'))
+            solver.add(at_most_one_bitwise(clauses , name = f't{t1}t{t2}'))
             # print("1 : number of clause in the at_least_one" , len(clauses)) # Dimension check
             clauses = []
 
@@ -109,19 +105,19 @@ for t1 in range(0,team):
 # Constraint2 - Every team plays once at week
 for t in range(0,team):
     for w in range(0,weeks):
-        model.add(exactly_one_bitwise( list(vars[t,:,:,w].flatten()) , name = f't{t}w{w}'))
+        solver.add(exactly_one_bitwise( list(vars[t,:,:,w].flatten()) , name = f't{t}w{w}'))
 
 # Constraint3 - Every team plays at most twice in the same period over the tournament.
 for t in range(0,team):
     for p in range(0,periods):
         c = at_most_k( list(vars[t,:,p,:].flatten()) , k = 2 )
-        model.add(c)
+        solver.add(c)
 
 # Constraint 4 - Each game has exactly 2 team + Each game cannot be played by 2 home-team or 2 away-team
 for h in range(home):
     for p in range(periods):
         for w in range(weeks):
-            model.add(exactly_one_bitwise([vars[t,h,p,w] for t in range(team)] , name = f'h{h}p{p}w{w}') )
+            solver.add(exactly_one_bitwise([vars[t,h,p,w] for t in range(team)] , name = f'h{h}p{p}w{w}') )
 
 
 """
@@ -159,25 +155,9 @@ print(f"Init finished! ({init_time:.2f}s)")
 
 
 
-################################ OPT ################################
-team_imbalance = [
-    Abs(Sum([
-        If(vars[t,0,p,w], 1, 0) - If(vars[t,1,p,w], 1, 0)
-        for p in range(periods)
-        for w in range(weeks)
-    ]))
-    for t in range(team)
-]
-total_imbalance = Sum(team_imbalance)
-
-if(optimized_version):
-    h = model.minimize(total_imbalance)  # Set the objective function
-################################ OPT ################################
-
-
 
 ################################# MAIN ###############################
-bitwise_model = SAT1(model , team , vars , default_filename , init_time , opt_enabled=optimized_version)
+bitwise_model = SAT1(solver , team , vars , default_filename , init_time , opt_enabled=optimized_version)
 
 
 if( bitwise_model.solve() ) :
