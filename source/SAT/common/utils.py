@@ -95,26 +95,24 @@ class ContextSolver():
         start = time.perf_counter() # -----------------------------------------------------------------------------TIME(START)
         find_one_at_least_one_solution = False
         sat_result = self.solver.check()   # Start the SAT search and fill the variable model with the solution (ModelRef)
-        
-        
-        # TODO : FIX THE CODE ABOVE!!!
-        
-        
+        if(sat_result == z3.sat): 
+            find_one_at_least_one_solution = True
+            self.model = self.solver.model()
+            self.obj = self.compute_obj_function()
+
+        # TODO : FIX THE CODE ABOVE!!! ============================================= TO FIXXXX
         if(self.opt_enabled):
             temp_solver = self.solver
             while sat_result == sat:
                 find_one_at_least_one_solution = True
-                self.model = self.solver.model()
+                temp_obj = self.compute_obj_function()
+                print(temp_obj)
                 temp_solver.add(total_imbalance <= temp_obj - 1) # add a constraint about optimality
                 sat_result = temp_solver.check()
-        else:
-            if(sat_result == z3.sat): 
-                find_one_at_least_one_solution = True
-                self.model = self.solver.model()
-                self.obj = self.compute_obj_function()
+        # =========================================================================== TO FIXXXX
+        
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
         self.solve_time = ((end-start))
-            
         if(find_one_at_least_one_solution):
             return True
         else:
