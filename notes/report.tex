@@ -27,11 +27,10 @@ Name Surname \texttt{name.surname@studio.unibo.it}
 
 % TODO : DELETE PROF INTRO
 \section{Introduction}
-Briefly introduce the report (not the problem nor the generic methods).
-Describe and formalize what is common to all models:
-inputs, symbols, shared objective variable and bounds, global pre-processing,
-and any assumptions.
-Refer back to this section from later sections to avoid repetition.
+This report addresses the solution of the well-known \emph{Sports Tournament Scheduling Problem (STS)}.
+The focus is on presenting different modeling approaches and optimization techniques to handle the scheduling constraints and objectives.  
+Throughout the report we describe the common elements that underlie all models: the inputs, symbols, shared objective variable and bounds, global pre-processing, and any assumptions. 
+To avoid repetition, later sections will refer back to this introduction whenever these shared components are required.
 
 \paragraph{Instance parameters}
 Let \(T\) be the number of teams (even), \(W=T-1\) the number of weeks, and \(P=T/2\) the number of periods (parallel timeslots) per week.
@@ -42,6 +41,14 @@ Each solution is modeled referring to these three main variables.
     \item Example2 : $ T = 16 \xrightarrow{} W = 15 $ and  $ P = 8 $
     \item Example3 : $ T = 5  \xrightarrow{} $ NOT VALID 
 \end{itemize}
+
+\paragraph{General constraints}
+The classical formulation of the STS problem requires that:
+\begin{enumerate}
+    \item every team plays with every other team exactly once;
+    \item every team plays exactly once per week;
+    \item every team plays at most twice in the same period over the whole tournament.
+\end{enumerate}
 
 \paragraph{Objective function}
 
