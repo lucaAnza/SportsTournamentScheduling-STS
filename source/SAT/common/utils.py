@@ -1,10 +1,11 @@
-import datetime
+from datetime import datetime
 import sys
 import json
 from z3 import *
 import time
 from abc import abstractmethod
 import argparse
+from itertools import combinations
 
 
 ################################# WRAP CLASS #########################################
@@ -20,7 +21,7 @@ class ContextSolver():
         self.init_time = init_time
         self.solve_time = -1
         self.solver = z3_solver  # Solver
-        self.model = None        # ModelRef
+        self.model = None        # ModelRef  (A solution instance)
         self.team = team
         self.week = self.team - 1
         self.periods = self.team // 2
@@ -100,15 +101,17 @@ class ContextSolver():
             self.model = self.solver.model()
             self.obj = self.compute_obj_function()
 
-        # TODO : FIX THE CODE ABOVE!!! ============================================= TO FIXXXX
-        if(self.opt_enabled):
-            temp_solver = self.solver
-            while sat_result == sat:
-                find_one_at_least_one_solution = True
-                temp_obj = self.compute_obj_function()
-                print(temp_obj)
-                temp_solver.add(total_imbalance <= temp_obj - 1) # add a constraint about optimality
-                sat_result = temp_solver.check()
+        # !!!!!!!!!!!!!! TO FIX !!!!!!!!!!!!!!
+        if(self.opt_enabled):    # Optimization research
+            self.solver.push()  # Create a snapshot of the model
+            upper_bound = (self.periods*self.week)//2
+            # while sat_result == sat:
+            self.model = self.solver.model()
+            print("DEBUG BEFORE : " , self.solver.assertions()) # DEBUG
+            for t in range(self.team):  # Balance each team in the same way  ########################### LOGIC NOT CORRECT !!!!!!
+                self.solver.add(at_most_k(list(self.vars[t,0,:,:].flatten()) , upper_bound))
+            print("DEBUG : " , self.solver.assertions()) # DEBUG
+            sat_result = self.solver.check()
         # =========================================================================== TO FIXXXX
         
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
@@ -163,6 +166,37 @@ class SAT1(ContextSolver):
         new_entry['optimal'] = self.opt_enabled
         new_entry['obj'] = (self.obj)
         self.data[solution_name] = new_entry
+
+    def visualize_solution_raw(self , file_name):
+        
+        m = self.model
+
+        # Choose output destination
+        if file_name:
+            f = open(file_name, "w")
+            output = f
+        else:
+            output = sys.stdout
+
+        try:
+            print(datetime.now() , file=output)
+            for t in range(self.team):
+                print(f"\n\n----------TEAM {t+1}----------", file=output)
+                for h in range(self.home):  # home = 0 (away), 1 (home)
+                    label = "away : " if h == 0 else "home : "
+                    print(label, file=output)
+
+                    for p in range(self.periods):
+                        for w in range(self.week):
+                            temp = z3.is_true(m[self.vars[t, h, p, w]])
+                            print(int(temp), end=" ", file=output)
+                        print(file=output)  # Newline after each week row
+                    
+                print(f"-----------------------------", file=output)
+        finally:
+            if file_name:
+                f.close()
+
 
 # TODO : Finish to implement this class and test SAT1
 class SAT2(ContextSolver):
@@ -328,3 +362,30 @@ def visualize_solution_humanreadable(m, team , file_name=None):
         if file_name:
             f.close()
 ################################# I/O FUNCTIONS #########################################
+
+
+
+################################# ENCODINGS - PAIRWISE ###############################
+def at_least_one(bool_vars):
+    return Or(bool_vars)
+
+# Using naive-pairwise(O(n^2))
+def at_most_one(bool_vars):
+    return And([Not(And(pair[0], pair[1])) for pair in combinations(bool_vars, 2)])
+
+# Using naive-pairwise(O(n^2))
+def exactly_one(bool_vars):
+    return And(at_least_one(bool_vars), at_most_one(bool_vars))
+
+# Using naive-pairwise (O(n^k+1))
+def at_most_k(bool_vars, k):
+    return And([Or([Not(x) for x in X]) for X in combinations(bool_vars, k + 1)])
+ 
+# Using naive-pairwise (O(n^k+1))
+def at_least_k(bool_vars, k):
+    return at_most_k([Not(var) for var in bool_vars], len(bool_vars)-k)
+
+# Using naive-pairwise (O(n^k+1))
+def exactly_k(bool_vars, k):
+    return And(at_most_k(bool_vars, k), at_least_k(bool_vars, k))
+################################# ENCODINGS - PAIRWISE ###############################

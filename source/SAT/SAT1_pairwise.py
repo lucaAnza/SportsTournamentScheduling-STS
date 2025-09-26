@@ -133,6 +133,7 @@ if( pairwise_model.solve() ) :
     print("obj : " , pairwise_model.compute_obj_function())
     pairwise_model.add_solution_json(solution_name=f'SAT1-pairwise(n={team})')
     pairwise_model.export_json_solution()
+    pairwise_model.visualize_solution_raw("raw_solution.txt")
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
 print("-------------------------------------------------------------------------------------------------")
