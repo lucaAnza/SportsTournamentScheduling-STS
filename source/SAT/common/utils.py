@@ -101,17 +101,20 @@ class ContextSolver():
             self.model = self.solver.model()
             self.obj = self.compute_obj_function()
 
-        # !!!!!!!!!!!!!! TO FIX !!!!!!!!!!!!!!
+        # =========== IT WORKS!!! NEED TO FIX THE LOGIC BUT YOU GOT IT !!! ===========
+        # TODO : MAKE COMPARISON CON SMT SOLVER
+        # TODO : MOVE INTO SUBCLASS!
         if(self.opt_enabled):    # Optimization research
             self.solver.push()  # Create a snapshot of the model
             upper_bound = (self.periods*self.week)//2
             # while sat_result == sat:
-            self.model = self.solver.model()
-            print("DEBUG BEFORE : " , self.solver.assertions()) # DEBUG
+            # print("DEBUG BEFORE : " , self.solver.assertions()) # DEBUG
             for t in range(self.team):  # Balance each team in the same way  ########################### LOGIC NOT CORRECT !!!!!!
-                self.solver.add(at_most_k(list(self.vars[t,0,:,:].flatten()) , upper_bound))
-            print("DEBUG : " , self.solver.assertions()) # DEBUG
+                for h in range(self.home):
+                    self.solver.add(at_most_k(list(self.vars[t,h,:,:].flatten()) , 3))
+            # print("DEBUG : " , self.solver.assertions()) # DEBUG
             sat_result = self.solver.check()
+            self.model = self.solver.model() 
         # =========================================================================== TO FIXXXX
         
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
