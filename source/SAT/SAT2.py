@@ -78,8 +78,9 @@ def exactly_one_heule(bool_vars, name = 'A'):
 # ============================== MODEL VARS =================================
 start1 = time.perf_counter()
 M = [[[Bool(f"M_{t1}_{t2}_w{w}") for w in range(weeks)] for t2 in range(team)] for t1 in range(team)] # t1,t2 plays in week w
-HOME = [[Bool(f"HOME_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is home in week w
 P = [[[Bool(f"P_t{t}_p{p}_w{w}") for w in range(weeks)] for p in range(periods)] for t in range(team)] # team t is assigned to period p in week w
+HOME = [[Bool(f"HOME_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is home in week w
+AWAY = [[Bool(f"AWAY_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is away in week w  (Added to make easily the optimization. TODO : Check the performance diff)
 model = Solver()
 # ============================== CONSTRAINTS ================================
 
@@ -104,13 +105,15 @@ for w in range(weeks):
     for t1 in range(team):
         for t2 in range(t1 + 1, team):
             model.add(Implies(M[t1][t2][w], Xor(HOME[t1][w], HOME[t2][w])))
+            # OPTIMALITY CONSTRAINT TODO : TO CHECK (It looks like the performance are quite better)
+            # model.add(Implies(And(M[t1][t2][w] , HOME[t1][w] ) , And(AWAY[t1][w])))
+            # model.add(Implies(And(M[t1][t2][w] , HOME[t2][w] ) , And(AWAY[t2][w])))
 
 # Constraint5 : Each game is played by 2 team : sum over t of P[t][p][w] == 2
 for w in range(weeks):
     for p in range(periods):
         model.add(PbEq([(P[t][p][w], 1) for t in range(team)], 2))     # SAT translation of x1​+x2​+x3​ =2 (PbEq also enabled weight 3x1 + 4x2 + ...)
         # S.add(exactly_k([P[t][p][w] for t in range(team)], 2))     # TODO : use exactly k of sequential 
-
 
 #Link periods variable (P) to pair variable (M)
 for w in range(weeks):

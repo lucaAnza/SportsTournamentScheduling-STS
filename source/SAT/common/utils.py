@@ -103,6 +103,7 @@ class ContextSolver():
 
         if(self.opt_enabled):
             self.solve_opt()
+            
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
         self.solve_time = ((end-start))
         if(find_one_at_least_one_solution):
@@ -162,8 +163,6 @@ class SAT1(ContextSolver):
         self.data[solution_name] = new_entry
 
     def solve_opt(self):
-
-        # TODO : MAKE COMPARISON CON SMT SOLVER
         sat_result = sat
         self.solver.push()  # Create a snapshot of the model
         upper_bound = (self.periods*self.week)//2
@@ -237,6 +236,7 @@ class SAT2(ContextSolver):
         return weeks_pairs
 
     def compute_obj_function(self):
+        # TODO : Check the quality of this function
         team_imbalance = []
         for t in range(2):
             homes = Sum([If(self.HOME[t][w], 1, 0) for w in range(self.week)])
@@ -256,9 +256,32 @@ class SAT2(ContextSolver):
         self.data[solution_name] = new_entry
         return self.data
     
+    # ===================== TO FIX - NOT WORKING AT THE MOMENT ============
+    # TODO : Remember that it was added a constraint into SAT2.py model
+    # TODO : Understand why the classical solve function looks like it always find the optimal solution
+    # MAIN IDEA 
+    """ - Add a new variable AWAY[T][W]
+        - Add a new constraint at most_one AWAY[T][w],H[T],[w]
+        -    Add a new constraint for optimization atmost(AWAY[T][0] , ...) and atmost(AWAY[T][0],...)
+    """
     def solve_opt(self):
-        # TODO : Implement it
-        print("TO IMPLEMENT")
+        sat_result = sat
+        self.solver.push()  # Create a snapshot of the model
+        upper_bound = (self.periods*self.week)//2
+
+        # Linear research (every team the upperbound is decreased of 1)
+        while sat_result == sat:
+            self.model = self.solver.model()
+            # Constraint for optimality
+            for t in range(self.team):  
+                for h in range(self.home):
+                    self.solver.add(at_most_k(list(self.vars[t,h,:,:].flatten()) , upper_bound))  
+            sat_result = self.solver.check() 
+            upper_bound = upper_bound - 1
+        
+        self.solver.pop() # Restored the status of the solver (removed all constraint about optimality)
+        self.obj = self.compute_obj_function()
+    # ===================== TO FIX - NOT WORKING AT THE MOMENT ============
 ################################# WRAP CLASS #########################################
 
 
@@ -303,39 +326,6 @@ def get_user_settings(argv, docker_filename, script_filename):
 
     return team, weeks, periods, home, default_filename, optimized_version, precomputing_version
 
-
-def visualize_solution_raw(m, team ,  file_name=None):
-    
-    # Define problem size
-    weeks   = team - 1
-    periods = team // 2
-    home  = 2 
-    
-    # Choose output destination
-    if file_name:
-        f = open(file_name, "w")
-        output = f
-    else:
-        output = sys.stdout
-
-    try:
-        print(datetime.now() , file=output)
-        for t in range(team):
-            print(f"\n\n----------TEAM {t+1}----------", file=output)
-            for h in range(home):  # home = 0 (away), 1 (home)
-                label = "away : " if h == 0 else "home : "
-                print(label, file=output)
-
-                for p in range(periods):
-                    for w in range(weeks):
-                        temp = z3.is_true(m[vars[t, h, p, w]])
-                        print(int(temp), end=" ", file=output)
-                    print(file=output)  # Newline after each week row
-                
-            print(f"-----------------------------", file=output)
-    finally:
-        if file_name:
-            f.close()
 
 # m : is the output of s.model()
 def visualize_solution_humanreadable(m, team , file_name=None):
