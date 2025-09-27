@@ -101,22 +101,8 @@ class ContextSolver():
             self.model = self.solver.model()
             self.obj = self.compute_obj_function()
 
-        # =========== IT WORKS!!! NEED TO FIX THE LOGIC BUT YOU GOT IT !!! ===========
-        # TODO : MAKE COMPARISON CON SMT SOLVER
-        # TODO : MOVE INTO SUBCLASS!
-        if(self.opt_enabled):    # Optimization research
-            self.solver.push()  # Create a snapshot of the model
-            upper_bound = (self.periods*self.week)//2
-            # while sat_result == sat:
-            # print("DEBUG BEFORE : " , self.solver.assertions()) # DEBUG
-            for t in range(self.team):  # Balance each team in the same way  ########################### LOGIC NOT CORRECT !!!!!!
-                for h in range(self.home):
-                    self.solver.add(at_most_k(list(self.vars[t,h,:,:].flatten()) , 3))
-            # print("DEBUG : " , self.solver.assertions()) # DEBUG
-            sat_result = self.solver.check()
-            self.model = self.solver.model() 
-        # =========================================================================== TO FIXXXX
-        
+        if(self.opt_enabled):
+            self.solve_opt()
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
         self.solve_time = ((end-start))
         if(find_one_at_least_one_solution):
@@ -126,6 +112,11 @@ class ContextSolver():
     
     @abstractmethod
     def compute_obj_function(self):
+        # TO IMPLEMENT IN SUBCLASS
+        pass
+
+    @abstractmethod
+    def solve_opt(self):
         # TO IMPLEMENT IN SUBCLASS
         pass
     
@@ -169,6 +160,26 @@ class SAT1(ContextSolver):
         new_entry['optimal'] = self.opt_enabled
         new_entry['obj'] = (self.obj)
         self.data[solution_name] = new_entry
+
+    def solve_opt(self):
+
+        # TODO : MAKE COMPARISON CON SMT SOLVER
+        sat_result = sat
+        self.solver.push()  # Create a snapshot of the model
+        upper_bound = (self.periods*self.week)//2
+
+        # Linear research (every team the upperbound is decreased of 1)
+        while sat_result == sat:
+            self.model = self.solver.model()
+            # Constraint for optimality
+            for t in range(self.team):  
+                for h in range(self.home):
+                    self.solver.add(at_most_k(list(self.vars[t,h,:,:].flatten()) , upper_bound))  
+            sat_result = self.solver.check() 
+            upper_bound = upper_bound - 1
+        
+        self.solver.pop() # Restored the status of the solver (removed all constraint about optimality)
+        self.obj = self.compute_obj_function()
 
     def visualize_solution_raw(self , file_name):
         
@@ -244,6 +255,10 @@ class SAT2(ContextSolver):
         new_entry = {'sol': sol_list, 'time': self.init_time + self.solve_time, 'optimal': self.opt_enabled, 'obj': self.obj}
         self.data[solution_name] = new_entry
         return self.data
+    
+    def solve_opt(self):
+        # TODO : Implement it
+        print("TO IMPLEMENT")
 ################################# WRAP CLASS #########################################
 
 
