@@ -168,7 +168,7 @@ sequential_model = SAT1(solver , team , vars , default_filename , init_time , op
 
 if( sequential_model.solve() ) :
     print(f"SAT1-SEQUENTIAL : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {sequential_model.solve_time:.2f} = {(init_time+sequential_model.solve_time):.2f}s)")
-    print("obj : " , sequential_model.compute_obj_function())
+    print("obj : " , sequential_model.obj)
     sequential_model.add_solution_json(solution_name=f'SAT1-sequential(n={team})')
     sequential_model.export_json_solution()
 else:

@@ -228,19 +228,21 @@ class SAT2(ContextSolver):
                 teams_here = [t for t in range(self.team) if is_true(model[self.P[t][p][w]])]
                 assert len(teams_here) == 2, f"Week {w}, period {p} does not have exactly 2 teams."
                 t1, t2 = teams_here[0], teams_here[1]
-                h1 = is_true(model[self.HOME[t1][w]])
-                h2 = is_true(model[self.HOME[t2][w]])
-                home_team = t1 if h1 else t2
-                away_team = t2 if h1 else t1
+                t1_play_at_home = is_true(model[self.HOME[t1][w]])
+                if(t1_play_at_home):
+                    home_team , away_team = t1 , t2
+                else:
+                    home_team , away_team = t2 , t1
                 weeks_pairs[w].append((home_team, away_team))
         return weeks_pairs
 
-    def compute_obj_function(self):
-        # TODO : Check the quality of this function
+    def compute_obj_function(self):   
         team_imbalance = []
-        for t in range(2):
-            homes = Sum([If(self.HOME[t][w], 1, 0) for w in range(self.week)])
-            team_imbalance.append(Abs(homes - (self.week - homes)))
+        matches = self.team - 1 # Each team plays always n-1 match
+        # Compute team_imbalance for each team and sum it
+        for t in range(self.team):
+            homes = Sum([If(self.HOME[t][w], 1, 0) for w in range(self.week)])  
+            team_imbalance.append(Abs(matches - homes))
         total_imbalance = Sum(team_imbalance)
         obj = self.solver.model().evaluate(total_imbalance)
         return obj.as_long()

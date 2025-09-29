@@ -163,9 +163,11 @@ sequential_model = SAT2(model , team , M , HOME , P , default_filename , init_ti
 
 if( sequential_model.solve() ) :
     print(f"SAT2 : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {sequential_model.solve_time:.2f} = {(init_time+sequential_model.solve_time):.2f}s)")
-    print("obj : " , sequential_model.compute_obj_function())
+    print("obj : " , sequential_model.obj)
     sequential_model.add_solution_json(solution_name=f'SAT2-(n={team})')
     sequential_model.export_json_solution()
+    """for d in sequential_model.model.decls():
+        print(f"{d.name()} = {sequential_model.model[d]}")"""
 else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
 print("-------------------------------------------------------------------------------------------------")

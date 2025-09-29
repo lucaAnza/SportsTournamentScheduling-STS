@@ -161,7 +161,7 @@ bitwise_model = SAT1(solver , team , vars , default_filename , init_time , opt_e
 
 if( bitwise_model.solve() ) :
     print(f"SAT1-BITWISE : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {bitwise_model.solve_time:.2f} = {(init_time+bitwise_model.solve_time):.2f}s)")
-    print(bitwise_model.compute_obj_function())
+    print(bitwise_model.obj)
     bitwise_model.add_solution_json(solution_name=f'SAT1-bitwise(n={team})')
     bitwise_model.export_json_solution()
 else:
