@@ -100,10 +100,10 @@ class ContextSolver():
             find_one_at_least_one_solution = True
             self.model = self.solver.model()
             self.obj = self.compute_obj_function()
+            # Optimality research
+            if(self.opt_enabled):
+                self.solve_opt()
 
-        if(self.opt_enabled):
-            self.solve_opt()
-            
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
         self.solve_time = ((end-start))
         if(find_one_at_least_one_solution):
@@ -162,11 +162,11 @@ class SAT1(ContextSolver):
         new_entry['obj'] = (self.obj)
         self.data[solution_name] = new_entry
 
+    # TODO : Change at_most_with_at_least!
     def solve_opt(self):
         sat_result = sat
         self.solver.push()  # Create a snapshot of the model
         upper_bound = (self.periods*self.week)//2
-
         # Linear research (every team the upperbound is decreased of 1)
         while sat_result == sat:
             self.model = self.solver.model()
@@ -211,7 +211,7 @@ class SAT1(ContextSolver):
                 f.close()
 
 
-# TODO : Finish to implement this class and test SAT1
+# TODO : Finish to implement this class expecially precomputing and test SAT1
 class SAT2(ContextSolver):
 
     def __init__(self , z3_solver , team , M , HOME , P, solution_filename , init_time , opt_enabled):
@@ -260,7 +260,7 @@ class SAT2(ContextSolver):
     
     # ===================== TO FIX - NOT WORKING AT THE MOMENT ============
     # TODO : Remember that it was added a constraint into SAT2.py model
-    # TODO : Understand why the classical solve function looks like it always find the optimal solution
+    # TODO : Fix the problem of the model that disapperar from self.solver (WHYYYYY). Possible explanation is push() but there are also problem
     # MAIN IDEA 
     """ - Add a new variable AWAY[T][W]
         - Add a new constraint at most_one AWAY[T][w],H[T],[w]
@@ -268,20 +268,20 @@ class SAT2(ContextSolver):
     """
     def solve_opt(self):
         sat_result = sat
-        self.solver.push()  # Create a snapshot of the model
-        upper_bound = (self.periods*self.week)//2
-
+        # self.solver.push()  # Create a snapshot of the model
+        lower_bound = 1
         # Linear research (every team the upperbound is decreased of 1)
         while sat_result == sat:
             self.model = self.solver.model()
             # Constraint for optimality
             for t in range(self.team):  
-                for h in range(self.home):
-                    self.solver.add(at_most_k(list(self.vars[t,h,:,:].flatten()) , upper_bound))  
+                self.solver.add(at_least_k(list(self.HOME[0][:]) , lower_bound))                               # At least k home match
+                self.solver.add(at_least_k([Not(self.HOME[0][w]) for w in range(self.week)] , lower_bound))    # At least k away match
             sat_result = self.solver.check() 
-            upper_bound = upper_bound - 1
+            print(lower_bound , self.compute_obj_function())
+            lower_bound = lower_bound + 1
         
-        self.solver.pop() # Restored the status of the solver (removed all constraint about optimality)
+        # self.solver.pop() # Restored the status of the solver (removed all constraint about optimality)
         self.obj = self.compute_obj_function()
     # ===================== TO FIX - NOT WORKING AT THE MOMENT ============
 ################################# WRAP CLASS #########################################
