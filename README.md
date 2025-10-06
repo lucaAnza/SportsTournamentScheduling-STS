@@ -80,30 +80,17 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 ### TODO
 
 1. Populate /result
-2. Ask into CP script if is run from docker or not
-3. Fix Optimize function. You cannot use **Optimize**()!!!
-   ```python
-   # Continue this code
-   attempt = 0
-   loop = True
-   if(optimized_version):
-      
-      while(loop):
-         attempt = attempt + 1
-         # Doing a search
-         initial_upper_bound = team**2
+2. Bug in mip solution
 
-         start = time.perf_counter()
-         pairwise_result = pairwise.check()
-         end = time.perf_counter()
-         solve_time = ((end-start))
+```text
+Traceback (most recent call last):
+  File "/home/luke/Desktop/SportsTournamentScheduling-STS/source/MIP/sts_milp.py", line 43, in <module>
+    m = Model(sense=minimize)
+        ^^^^^^^^^^^^^^^^^^^^^
+TypeError: Model() got an unexpected keyword argument 'sense'
+```
 
-         if( pairwise_result == z3.sat):
-               obj = pairwise.model().evaluate(total_imbalance)
-               print(f"Attemp{attempt} -> SAT ✅ - obj = {pairwise.model().evaluate(total_imbalance)}")
-               pairwise.add()
-         else:
-               loop = False
-   ```
-4. Analize the discussion post -> https://virtuale.unibo.it/mod/forum/view.php?id=1888696
+3. Mip problem doesn't have the possibility do deactivate the optmization function
+4. Make an option when you call the script that make easy to understand if they are called by docker or not like bash script.sh --docker
+
 
