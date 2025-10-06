@@ -82,7 +82,7 @@ def import_raw_solution(filename='output.txt'):
         return ""
     
 
-def import_json_solution(filename=docker_filename):
+def import_json_solution(filename):
     try:
         with open(filename, "r") as f:
             return json.load(f)
@@ -93,7 +93,7 @@ def import_json_solution(filename=docker_filename):
         print(f"Error during file reading. Returning empty dictionary.")
         return {}
 
-def export_json_solution(data, filename=docker_filename, indent=4, compact_keys=("sol",)):
+def export_json_solution(data, filename, indent=4, compact_keys=("sol",)):
     """Pretty-print JSON, but keep inner lists in `compact_keys` compact (like [1,2])."""
     def write(obj, f, level=0, parent_key=None):
         pad = " " * (level * indent)
@@ -122,7 +122,9 @@ def export_json_solution(data, filename=docker_filename, indent=4, compact_keys=
             f.write(json.dumps(obj))
 
     # Make sure parent directories exist
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    dirpath = os.path.dirname(filename)
+    if dirpath:  # only create if not empty
+        os.makedirs(dirpath, exist_ok=True)
 
     with open(filename, "w") as f:
         write(data, f, 0); f.write("\n")
@@ -137,13 +139,21 @@ def add_solution_json(data , new_entry , solution_name = 'Name'):
 # Transform the raw output from minizinc into a json structured file
 if __name__ == '__main__':
     
+    # Set default filename
+    default_filename = script_filename
+
     if len(sys.argv) > 1:
         time = float(sys.argv[1])
         time = round(time , 2)
+    
+    if len(sys.argv) > 2:
+        docker_string = sys.argv[2]
+        if docker_string == '--docker':
+            default_filename = docker_filename
 
-    data = import_json_solution()
+    data = import_json_solution(default_filename)
     output = import_raw_solution()
     new_entry , n = process_output_string(output , data , time)
     data = add_solution_json(data , new_entry , f'CP (n = {n})')
-    export_json_solution(data)
+    export_json_solution(data , default_filename)
 

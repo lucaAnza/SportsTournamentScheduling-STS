@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parameters
+docker=${1:-}     # --docker if using Docker, empty string otherwise
+
 # Absolute path to THIS script's folder (e.g., .../SAT)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" 
 while true; do
@@ -22,7 +25,7 @@ while true; do
         minizinc -D "n=$team" $SCRIPT_DIR/STS_matchVar_first\ column.mzn > output.txt
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
-        python3 $SCRIPT_DIR/minizinc_reader.py $runtime
+        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker"
         rm output.txt
     else
         echo "Invalid option. Try again."

@@ -91,6 +91,7 @@ TypeError: Model() got an unexpected keyword argument 'sense'
 ```
 
 3. Mip problem doesn't have the possibility do deactivate the optmization function
-4. Make an option when you call the script that make easy to understand if they are called by docker or not like bash script.sh --docker
+4. Add automatic docker in CP
+5. Add automatic docker in MIP
 
 
