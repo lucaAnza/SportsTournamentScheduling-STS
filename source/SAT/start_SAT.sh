@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parameters
+docker=$1     # --docker if using Docker, empty string otherwise
+
 # Absolute path to THIS script's folder (e.g., .../SAT)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -15,7 +18,7 @@ programs=(
 
 while true; do
     echo -e "\n===== Program Menu ====="
-    echo "1. RUN TEST ON ALL VERSIONS (it uses best possible version, including precomputing)"
+    echo "1. RUN TEST ON ALL VERSIONS (it uses best possible settings, including precomputing)"
     for i in "${!programs[@]}"; do
         echo "$((i+2)). $(basename "${programs[$i]}")"
     done
@@ -36,20 +39,21 @@ while true; do
         for prog in "${programs[@]}"; do
             if [[ -f "$prog" ]]; then
                 if [ $yn == "y" ]; then
-                    python3 "$prog" "$team" "--optimized" "--docker" "--precomputing"
+                    python3 "$prog" "$team" "--optimized" "$docker" "--precomputing"
                 else
-                    python3 "$prog" "$team" "--docker" "--precomputing"
+                    python3 "$prog" "$team" "$docker" "--precomputing"
                 fi
                 
             else
                 echo "Error: file not found -> $prog"
             fi
         done
+    # Run onlt the selected program
     elif [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 2 && choice <= ${#programs[@]}+1 )); then
         prog="${programs[$((choice-2))]}"
         if [[ -f "$prog" ]]; then
             echo "Starting $(basename "$prog")..."
-            python3 "$prog"
+            python3 "$prog" "$docker"
         else
             echo "Error: file not found -> $prog"
         fi

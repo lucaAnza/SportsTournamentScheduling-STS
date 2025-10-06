@@ -14,4 +14,4 @@ WORKDIR /app
 COPY source/ /app 
 
 # Comand to execute
-CMD ["bash" , "menu.sh"]
+CMD ["bash" , "menu.sh" , "--docker"]

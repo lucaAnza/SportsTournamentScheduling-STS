@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Parameters
+docker=$1  # --docker if using Docker, empty string otherwise
+
 # Directories and corresponding start scripts
 declare -A scripts
 scripts["SAT"]="SAT/start_SAT.sh"
@@ -25,8 +28,8 @@ while true; do
         break
     elif [[ -n "${keys[$choice]}" ]]; then
         script="${scripts[${keys[$choice]}]}"
-        echo "Running $script ..."
-        bash "$script"
+        echo "Running $script..."
+        bash "$script" "$docker"
     else
         echo "Invalid choice. Try again."
     fi

@@ -162,7 +162,6 @@ class SAT1(ContextSolver):
         new_entry['obj'] = (self.obj)
         self.data[solution_name] = new_entry
 
-    # TODO : Change at_most_with_at_least!
     def solve_opt(self):
         sat_result = sat
         self.solver.push()  # Create a snapshot of the model
@@ -253,6 +252,8 @@ class SAT2(ContextSolver):
         return obj.as_long()
 
     def add_solution_json(self , solution_name):
+        if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
+
         # Build a periods×weeks array of matches [home,away] using the model
         sol_list = [[['X', 'X'] for _ in range(self.week)] for __ in range(self.periods)]
         packed = self.pack_week_pairs_from_model(self.model)  # per week: list of (home, away) following period order
@@ -307,16 +308,18 @@ def get_user_settings(argv, docker_filename, script_filename):
     # Parse given argv (expects full sys.argv-like list)
     args = parser.parse_args(argv[1:])
 
+    # See if is launched by docker
+    docker_mode = args.docker
+    print(docker_mode)
+    
     # Interactive fallback if team was not provided
     if args.team is None:
         team = int(input("\nHow many teams do you want ? "))
         optimized_version = _yes("Do you want optimized version ? (y/n) ")
-        docker_mode = _yes("Are you executing this file using docker ? (y/n) ")
         precomputing_version = _yes("Do you want precomputing version ? (y/n) ")
     else:
         team = args.team
         optimized_version = args.optimized
-        docker_mode = args.docker
         precomputing_version = args.precomputing
 
     # Derivated variables
