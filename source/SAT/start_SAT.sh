@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Parameters
-docker=$1     # --docker if using Docker, empty string otherwise
+docker=${1:-}     # --docker if using Docker, empty string otherwise
 
 # Absolute path to THIS script's folder (e.g., .../SAT)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
