@@ -239,18 +239,23 @@ class SAT2(ContextSolver):
     def compute_obj_function(self):   
         team_imbalance = []
         matches = self.team - 1 # Each team plays always n-1 match
-        # Compute team_imbalance for each team and sum it
+        
+        # Compute team_imbalance for each team 
         for t in range(self.team):
-            homes = Sum([If(self.HOME[t][w], 1, 0) for w in range(self.week)])  
-            team_imbalance.append(Abs(matches - homes))
+            homes = Sum([If(self.HOME[t][w], 1, 0) for w in range(self.week)]) 
+            imbalance_of_one_team =  Abs( (matches - homes) - homes)  # ABS (|Away| - |Home|)
+            team_imbalance.append(imbalance_of_one_team)  
+            # print(f"team{t} : {self.model.evaluate(imbalance_of_one_team)}")
+        
+        # Total sum for each team_imbalance
         total_imbalance = Sum(team_imbalance)
-        obj = self.solver.model().evaluate(total_imbalance)
+        obj = self.model.evaluate(total_imbalance)
         return obj.as_long()
 
     def add_solution_json(self , solution_name):
         # Build a periods×weeks array of matches [home,away] using the model
         sol_list = [[['X', 'X'] for _ in range(self.week)] for __ in range(self.periods)]
-        packed = self.pack_week_pairs_from_model(self.solver.model())  # per week: list of (home, away) following period order
+        packed = self.pack_week_pairs_from_model(self.model)  # per week: list of (home, away) following period order
         for w in range(self.week):
             for p, (h, a) in enumerate(packed[w]):
                 sol_list[p][w] = [h + 1, a + 1]  # 1-based
@@ -258,32 +263,26 @@ class SAT2(ContextSolver):
         self.data[solution_name] = new_entry
         return self.data
     
-    # ===================== TO FIX - NOT WORKING AT THE MOMENT ============
-    # TODO : Remember that it was added a constraint into SAT2.py model
-    # TODO : Fix the problem of the model that disapperar from self.solver (WHYYYYY). Possible explanation is push() but there are also problem
-    # MAIN IDEA 
-    """ - Add a new variable AWAY[T][W]
-        - Add a new constraint at most_one AWAY[T][w],H[T],[w]
-        -    Add a new constraint for optimization atmost(AWAY[T][0] , ...) and atmost(AWAY[T][0],...)
-    """
     def solve_opt(self):
         sat_result = sat
-        # self.solver.push()  # Create a snapshot of the model
+        self.solver.push()  # Create a snapshot of the model
         lower_bound = 1
+
         # Linear research (every team the upperbound is decreased of 1)
         while sat_result == sat:
-            self.model = self.solver.model()
             # Constraint for optimality
-            for t in range(self.team):  
-                self.solver.add(at_least_k(list(self.HOME[0][:]) , lower_bound))                               # At least k home match
-                self.solver.add(at_least_k([Not(self.HOME[0][w]) for w in range(self.week)] , lower_bound))    # At least k away match
+            for t in range(self.team):                           
+                at_least_k_home_match = at_least_k([(self.HOME[t][w]) for w in range(self.week)] , lower_bound)
+                at_least_k_away_match = at_least_k([Not(self.HOME[t][w]) for w in range(self.week)] , lower_bound) 
+                self.solver.add(at_least_k_home_match)
+                self.solver.add(at_least_k_away_match)    
             sat_result = self.solver.check() 
-            print(lower_bound , self.compute_obj_function())
+            if(sat_result == sat):
+                self.model = self.solver.model()
             lower_bound = lower_bound + 1
         
-        # self.solver.pop() # Restored the status of the solver (removed all constraint about optimality)
+        self.solver.pop()     # Restored the status of the solver (removed all constraint about optimality)
         self.obj = self.compute_obj_function()
-    # ===================== TO FIX - NOT WORKING AT THE MOMENT ============
 ################################# WRAP CLASS #########################################
 
 

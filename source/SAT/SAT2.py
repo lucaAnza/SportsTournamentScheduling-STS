@@ -105,10 +105,7 @@ for w in range(weeks):
     for t1 in range(team):
         for t2 in range(t1 + 1, team):
             model.add(Implies(M[t1][t2][w], Xor(HOME[t1][w], HOME[t2][w])))
-            # OPTIMALITY CONSTRAINT TODO : TO CHECK (It looks like the performance are quite better)
-            # model.add(Implies(And(M[t1][t2][w] , HOME[t1][w] ) , And(AWAY[t1][w])))
-            # model.add(Implies(And(M[t1][t2][w] , HOME[t2][w] ) , And(AWAY[t2][w])))
-
+            
 # Constraint5 : Each game is played by 2 team : sum over t of P[t][p][w] == 2
 for w in range(weeks):
     for p in range(periods):
