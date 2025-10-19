@@ -23,7 +23,6 @@ def get_user_settings(argv, docker_filename, script_filename):
 
     # See if is launched by docker
     docker_mode = args.docker
-    print("DOCKER MODE - DEBUG : " , docker_mode)
 
     # Interactive fallback if team was not provided
     if args.team is None:

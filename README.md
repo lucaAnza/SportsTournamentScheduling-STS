@@ -80,17 +80,7 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 ### TODO
 
 1. Populate /result
-2. Bug in mip solution
+2. Mip problem doesn't have the possibility do deactivate the optmization function
 
-```text
-Traceback (most recent call last):
-  File "/home/luke/Desktop/SportsTournamentScheduling-STS/source/MIP/sts_milp.py", line 43, in <module>
-    m = Model(sense=minimize)
-        ^^^^^^^^^^^^^^^^^^^^^
-TypeError: Model() got an unexpected keyword argument 'sense'
-```
-
-3. Mip problem doesn't have the possibility do deactivate the optmization function
-4. Add automatic docker in MIP
 
 

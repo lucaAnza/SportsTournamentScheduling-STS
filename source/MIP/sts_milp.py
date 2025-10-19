@@ -142,9 +142,9 @@ runtime= end - start
 optimal = False
 if status == OptimizationStatus.OPTIMAL:
     optimal = True
-    print(f"Optimal solution found ✅ (opt = {m.objective_value})")
+    print(f"✅ Optimal solution found (opt = {m.objective_value})")
 elif status == OptimizationStatus.FEASIBLE:
-    print(f"Feasible solution found but not proven optimal ✅ (opt = {m.objective_value})")
+    print(f"✅ Feasible solution found but not proven optimal (opt = {m.objective_value})")
 else:
     print("No solution found.")
 
@@ -162,7 +162,6 @@ if m.num_solutions:
 
     data = import_json_solution(default_filename)
     data = add_solution_json(schedule , runtime , m.objective_value , optimal ,  solution_name=f'MIP (n = {n}) OPT = {optimal}')
-    print(m.objective_value)
     export_json_solution(data , filename=default_filename)
     
 else:
