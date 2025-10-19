@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parameters
+docker=${1:-}     # --docker if using Docker, empty string otherwise
+
 # Absolute path to THIS script's folder (e.g., .../SAT)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -18,7 +21,7 @@ while true; do
     elif [[ "$choice" == "1" ]]; then
         # Ask parameters
         read -rp "Enter number of teams (int): " team 
-        python $SCRIPT_DIR/sts_milp.py $team docker
+        python $SCRIPT_DIR/sts_milp.py $team $docker
 
     else
         echo "Invalid option. Try again."
