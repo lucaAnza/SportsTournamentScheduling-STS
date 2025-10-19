@@ -1,6 +1,4 @@
 import time
-import os
-import json
 import sys
 from mip import Model, BINARY, INTEGER, xsum, minimize, OptimizationStatus
 from common.utils import *
@@ -8,31 +6,13 @@ from common.utils import *
 # ========== SETTINGS VARIABLE ========== #
 script_filename = 'solutions.json'
 docker_filename = '/app/outputs/MIP/solutions.json'
-solution_filename = script_filename
+default_filename = script_filename
     
 # ==================================== problem size ====================================
-"""n , W , P , _ , default_filename , _ , _ = get_user_settings(sys.argv , docker_filename , script_filename)
-teams = range(n)
-weeks = range(W)
-periods = range(P)"""
-if len(sys.argv) > 1:
-    n = int(sys.argv[1])
-    if len(sys.argv) > 2:
-        if(sys.argv[2] == 'docker'):
-            solution_filename = docker_filename 
-else : 
-    n = int(input('Number of teams: '))
-    
-if n % 2 != 0:
-    raise ValueError("n must be even")
-
-P = n // 2            # periods per week
-W = n - 1    # weeks
+n , W , P , _ , default_filename , _ , _ = get_user_settings(sys.argv , docker_filename , script_filename)
 teams = range(n)
 weeks = range(W)
 periods = range(P)
-          
-
 
 # all ordered pairs (i<j) (to avoid double match-ups)
 pairs = [(i, j) for i in teams for j in teams if i < j]
@@ -180,10 +160,10 @@ if m.num_solutions:
                     else:
                         schedule[p][w] = (j+1, i+1)   # j home, i away
 
-    data = import_json_solution(solution_filename)
+    data = import_json_solution(default_filename)
     data = add_solution_json(schedule , runtime , m.objective_value , optimal ,  solution_name=f'MIP (n = {n}) OPT = {optimal}')
     print(m.objective_value)
-    export_json_solution(data , filename=solution_filename)
+    export_json_solution(data , filename=default_filename)
     
 else:
     print("No feasible solution found.")

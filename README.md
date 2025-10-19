@@ -91,7 +91,6 @@ TypeError: Model() got an unexpected keyword argument 'sense'
 ```
 
 3. Mip problem doesn't have the possibility do deactivate the optmization function
-4. Add automatic docker in CP
-5. Add automatic docker in MIP
+4. Add automatic docker in MIP
 
 
