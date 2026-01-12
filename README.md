@@ -1,10 +1,10 @@
-# 🏆 Sports Tournament Scheduling (STS) Solver
+# Sports Tournament Scheduling (STS) Solver
 
 Organizing sports tournaments is a strategically important, yet complex task. As sports continue to grow in commercial value and global popularity, the demand to efficiently generate equitable tournament schedules has become increasingly critical.
 
 This repository provides an implementation for solving the Sports Tournament Scheduling (STS) problem, a challenging combinatorial decision and optimization problem.
 
-## 🚀 Features
+## Features
 
 - Generates feasible tournament schedules for a given set of teams.
 
@@ -14,7 +14,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
 
 - Modular design to allow students and researchers to experiment with different algorithms (constraint programming, local search, metaheuristics, SAT/SMT solvers, etc.).
 
-## 🔧 Technologies & Methods
+## Technologies & Methods
 
 - Python-based implementation (easy to extend and modify).
 
@@ -29,7 +29,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
   - CP (Constraint Programming) for flexible scheduling constraints.  (**Z3**)
 
 
-## 📚 Use Cases
+## Use Cases
 
 - Academic research in combinatorial optimization and AI.
 
@@ -37,7 +37,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
 
 - Teaching material for courses on optimization, scheduling, and operations research.
 
-## 📝 Getting Started (Linux)
+## Getting Started (Linux 🐧)
 
 1. Start the Docker engine.
 2. Move to `.../SportsTournamentScheduling-STS`
@@ -49,10 +49,11 @@ This repository provides an implementation for solving the Sports Tournament Sch
 4. Use the script menu as you prefer.
 
    * Every **JSON solution generated** will be saved in the `result/<MODEL>/outputs` directory.
+     * It is possible to test the correctness of the solution in linear time using [solution_checker.py](notes/solution_checker.py).
    * Each program appends its solution to the same file.
    * To reset, simply delete `solutions.json` file.
 
-## 📝 Getting Started (Windows)
+## Getting Started (Windows)
 
 1. Start the Docker engine.
 2. Move to `.../SportsTournamentScheduling-STS`
@@ -67,6 +68,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
 4. Use the script menu as you prefer.
 
    * Every **JSON solution generated** will be saved in the `result/<MODEL>/outputs` directory.
+      * It is possible to test the correctness of the solution in linear time using [solution_checker.py](notes/solution_checker.py).
    * Each program appends its solution to the same file.
    * To reset, simply delete `solutions.json` file.
 

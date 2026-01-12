@@ -294,6 +294,7 @@ def _yes(prompt: str) -> bool:
     return input(prompt).strip().lower() in ("y", "yes", "true", "1")
 
 def get_user_settings(argv, docker_filename, script_filename):
+
     parser = argparse.ArgumentParser(
         prog="scheduler",
         description="Sports Tournament Scheduler settings"
@@ -310,13 +311,17 @@ def get_user_settings(argv, docker_filename, script_filename):
 
     # See if is launched by docker
     docker_mode = args.docker
-    print(docker_mode)
     
     # Interactive fallback if team was not provided
     if args.team is None:
         team = int(input("\nHow many teams do you want ? "))
-        optimized_version = _yes("Do you want optimized version ? (y/n) ")
-        precomputing_version = _yes("Do you want precomputing version ? (y/n) ")
+        # SAT1 scripts doesn't have optimized version
+        if("SAT1" in argv[0]):
+            precomputing_version = False
+        else:
+            precomputing_version = _yes("Do you want precomputing version ? (y/n) ")
+        optimized_version = _yes("Do you want optimized version ? (y/n)")
+        
     else:
         team = args.team
         optimized_version = args.optimized

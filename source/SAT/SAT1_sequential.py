@@ -95,7 +95,11 @@ for t in range(0,team):
 
 print("-------------------------------------------------------------------------------------------------")
 
-solver = Solver()
+if(optimized_version):
+    model = Optimize()  # Use Solver() if you don't use optimization function
+else:
+    model = Solver()
+    optimized_label = ''
 ################################# DOMAIN DEFINITION ###############################
 
 
@@ -111,7 +115,7 @@ for t1 in range(0,team):
                     t_i = Or(list(vars[t1,:,p,w].flatten()))
                     t_j = Or(list(vars[t2,:,p,w].flatten()))
                     clauses.append(And(t_i , t_j))
-            solver.add(at_most_one_seq(clauses , name = f't{t1}t{t2}'))
+            model.add(at_most_one_seq(clauses , name = f't{t1}t{t2}'))
             # print("1 : number of clause in the at_least_one" , len(clauses)) # Dimension check
             clauses = []
 
@@ -119,13 +123,13 @@ for t1 in range(0,team):
 # Constraint2 - Every team plays once at week
 for t in range(0,team):
     for w in range(0,weeks):
-        solver.add(exactly_one_seq( list(vars[t,:,:,w].flatten()) , name = f't{t}w{w}' ))
+        model.add(exactly_one_seq( list(vars[t,:,:,w].flatten()) , name = f't{t}w{w}' ))
 
 # Constraint3 - Every team plays at most twice in the same period over the tournament.
 for t in range(0,team):
     for p in range(0,periods):
         c = at_most_k_seq( list(vars[t,:,p,:].flatten()) , k = 2  , name= f'p{p}t{t}')
-        solver.add(c)
+        model.add(c)
 
 # Constraint4 - Each game has exactly 2 team
 clauses = []
@@ -134,7 +138,7 @@ for p in range(0,periods):
         for t in range(team):
             x = Or(list(vars[t,:,p,w].flatten()))
             clauses.append(x)
-        solver.add(exactly_k(clauses,  k = 2 ))
+        model.add(exactly_k(clauses,  k = 2 ))
         # sequential.add(exactly_k_seq(clauses,  k = 2 , name= f'p{p}w{w}') )   # Computation become very slow
         # print("4.2 number of clause in the exactly_k: " , len(clauses)) # Dimension check
         clauses = []
@@ -143,7 +147,7 @@ for p in range(0,periods):
 for h in range(home):
     for p in range(0,periods):
         for w in range(0,weeks):
-            solver.add(at_most_one_seq(list(vars[:,h,p,w].flatten())  , name = f"h{h}p{p}w{w}" ))
+            model.add(at_most_one_seq(list(vars[:,h,p,w].flatten())  , name = f"h{h}p{p}w{w}" ))
             
             # print("4.3 number of clause in the at_most_one : " , len(list(vars[:,h,p,w].flatten())))  # Dimension check
 
@@ -151,7 +155,7 @@ for h in range(home):
 for t in range(team):
     for p in range(periods):
         for w in range(weeks):
-            solver.add(at_most_one_seq(list(vars[t,:,p,w].flatten()) , name = f"t{t}p{p}w{w}" ))  
+            model.add(at_most_one_seq(list(vars[t,:,p,w].flatten()) , name = f"t{t}p{p}w{w}" ))  
             # print("4.1 number of clause in the at_most_one: " , len(list(vars[t,:,p,w].flatten()))) # Dimension check   
 
 
@@ -163,7 +167,7 @@ print(f"Init finished! ({init_time:.2f}s)")
 
 
 ################################# MAIN ###############################
-sequential_model = SAT1(solver , team , vars , default_filename , init_time , opt_enabled=optimized_version)
+sequential_model = SAT1(model , team , vars , default_filename , init_time , opt_enabled=optimized_version)
 
 
 if( sequential_model.solve() ) :
