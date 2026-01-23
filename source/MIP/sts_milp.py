@@ -4,7 +4,6 @@ from mip import Model, BINARY, INTEGER, xsum, minimize, OptimizationStatus
 from common.utils import *
 
 
-## TODO : add the possibility to set optimization on or off 
 
 
 # ========== SETTINGS VARIABLE ========== #

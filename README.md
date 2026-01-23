@@ -86,6 +86,7 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 3. Try again SAT2, it was added a feature in the json export that print if the pgm have activated the PREPROCESSING
 4. In CP when the solution in UNSAT make the output better
 5. In CP add the possibility to choose to optimize or not
+6. Add the possibility to choose the solver into the CP scripts
 
 
 
