@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+echo "CUSTOOOM"
 set -euo pipefail
 
 # Parameters

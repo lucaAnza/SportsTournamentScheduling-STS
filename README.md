@@ -82,7 +82,10 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 ### TODO
 
 1. Populate /result
-2. Mip problem doesn't have the possibility do deactivate the optmization function
+2. Mip problem doesn't have the possibility do deactivate the optmization function (Because by default is actived the optimized version, if in 300 the opt solution is not found it returns the non-optimal results) Should I really change ? 
+3. Try again SAT2, it was added a feature in the json export that print if the pgm have activated the PREPROCESSING
+4. In CP when the solution in UNSAT make the output better
+5. In CP add the possibility to choose to optimize or not
 
 
 

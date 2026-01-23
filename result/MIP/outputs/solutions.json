@@ -1,0 +1,10 @@
+{
+    "MIP (n = 2) OPT = True": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.06,
+        "optimal": true,
+        "obj": 2.0
+    }
+}

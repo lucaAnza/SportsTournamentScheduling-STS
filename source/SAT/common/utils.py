@@ -213,7 +213,8 @@ class SAT1(ContextSolver):
 # TODO : Finish to implement this class expecially precomputing and test SAT1
 class SAT2(ContextSolver):
 
-    def __init__(self , z3_solver , team , M , HOME , P, solution_filename , init_time , opt_enabled):
+    def __init__(self , z3_solver , team , M , HOME , P, solution_filename , init_time , opt_enabled , precomputing_enabled):
+        self.precomputing_enable = precomputing_enabled
         self.M = M
         self.HOME = HOME
         self.P = P
@@ -253,6 +254,7 @@ class SAT2(ContextSolver):
 
     def add_solution_json(self , solution_name):
         if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
+        if(self.precomputing_enable) : solution_name = solution_name + '(PRECOMPUTING)'
 
         # Build a periods×weeks array of matches [home,away] using the model
         sol_list = [[['X', 'X'] for _ in range(self.week)] for __ in range(self.periods)]

@@ -143,6 +143,7 @@ runtime= end - start
 
 # ==================================== MAIN ====================================
 
+# By the default the library try to find the optimal value if it fail returns the non-optimal results
 optimal = False
 if status == OptimizationStatus.OPTIMAL:
     optimal = True

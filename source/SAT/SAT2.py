@@ -156,7 +156,7 @@ print(f"Init finished! ({init_time:.2f}s)")
 
 
 ################################# MAIN ###############################
-sequential_model = SAT2(model , team , M , HOME , P , default_filename , init_time , opt_enabled=optimized_version)
+sequential_model = SAT2(model , team , M , HOME , P , default_filename , init_time , opt_enabled=optimized_version , precomputing_enable = precomputing_version)
 
 if( sequential_model.solve() ) :
     print(f"SAT2 : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {sequential_model.solve_time:.2f} = {(init_time+sequential_model.solve_time):.2f}s)")
