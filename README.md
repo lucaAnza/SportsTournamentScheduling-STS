@@ -62,7 +62,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
    ```bash
    docker build -t cmdo_img:latest .
 
-   docker run --rm -it -v ${PWD}\result\SAT\outputs:/app/outputs/SAT cmdo_img -v ${PWD}\result\CP\outputs:/app/outputs/CP cmdo_img -v ${PWD}\result\MIP\outputs:/app/outputs/MIP cmdo_img 
+   docker run --rm -it -v ${PWD}\result\SAT\outputs:/app/outputs/SAT -v ${PWD}\result\CP\outputs:/app/outputs/CP -v ${PWD}\result\MIP\outputs:/app/outputs/MIP cmdo_img 
    
    ```
 4. Use the script menu as you prefer.
