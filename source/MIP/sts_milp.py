@@ -10,6 +10,7 @@ from common.utils import *
 script_filename = 'solutions.json'
 docker_filename = '/app/outputs/MIP/solutions.json'
 default_filename = script_filename
+debug_info = True
     
 # ==================================== problem size ====================================
 n , W , P , _ , default_filename , _ , _ = get_user_settings(sys.argv , docker_filename , script_filename)
@@ -40,7 +41,6 @@ home = [[[m.add_var(var_type=BINARY) for _ in pairs] for _ in periods] for _ in 
 # 1) Every pair plays exactly once (some week & period)
 for k, (i, j) in enumerate(pairs):
     m += xsum(y[w][p][k] for w in weeks for p in periods) == 1
-#print(pairs)
 
 # 2) Each (week,period) hosts exactly one game
 for w in weeks:
@@ -79,52 +79,31 @@ for w in weeks:
         # but we already have exactly one game per (w,p), so no extra constraint needed
 
 # ==================================== symmetry breaking ====================================
-
-# we fix the first week to be (0,1),(2,3),...
+# Fix the first week to be (0,1),(2,3),… (and fix home team) 
+# Fix the team 0 to play into the diagonal
 for p in periods:
-  idx = pairs.index((2*p,2*p+1))
+  idx = pairs.index((2*p,2*p+1))  # Obtain the index of the pair (2p,2p+1)
   m += y[0][p][idx] == 1
   m += home[0][p][idx] == 1
+  m += xsum(home[p][p][k] for k,(i,j) in enumerate(pairs) if i == 0) ==1
 
-  m += xsum(home[p][p][k]
-            #for p in periods
-            for k,(i,j) in enumerate(pairs)
-            if i == 0
-            )==1
-'''
-  # fixing the diagonal with team0 always playing
-  m += xsum(y[p][p][k] # + home[p][p][k]
-            #for p in periods
-            for k,(i,j) in enumerate(pairs)
-            if i == 0
-            )==1
-'''
 
 # ====================================objective function ====================================
-
-# Count home matches for each team (sum over all (w,p) where they're designated home)
 home_cnt = [m.add_var(var_type=INTEGER, lb=0) for _ in teams]
 
+# Count home matches for each team (sum over all (w,p) where they're designated home)
 for t in teams:
-    m += home_cnt[t] == xsum(
-        # t is i and i is home
-        home[w][p][k]
-        for w in weeks for p in periods
-        for k, (i, j) in enumerate(pairs)
-        if i == t
-    ) + xsum(
-        # t is j and j is home -> that happens when i is NOT home where (i,j) is scheduled
-        y[w][p][k] - home[w][p][k]
-        for w in weeks for p in periods
-        for k, (i, j) in enumerate(pairs)
-        if j == t
-    )
+    A = xsum(home[w][p][k] for w in weeks for p in periods for k, (i, _) in enumerate(pairs) if i == t)  # home games where team t is the i (the smaller index in the pair)
+    B = xsum(home[w][p][k] for w in weeks for p in periods for k, (_, j) in enumerate(pairs) if j == t)  # home games where team t is the j (the larger index in the pair)
+    
+    for t in teams:
+        m += home_cnt[t] ==  A  +  B
 
 # Balance objective: minimize sum_t max(home_cnt[t], away_cnt[t]) with linearization
 max_ha = [m.add_var(var_type=INTEGER, lb=0) for _ in teams]
 balance = [m.add_var(var_type=INTEGER, lb=0) for _ in teams]
 for t in teams:
-    away = (n - 1) - home_cnt[t]
+    away = (W - 1) - home_cnt[t]
     m += max_ha[t] >= home_cnt[t]
     m += max_ha[t] >= away
     m += balance[t] == (2*max_ha[t]-(n-1))
@@ -132,16 +111,13 @@ for t in teams:
 m.objective = xsum(balance)
 
 # ==================================== OPTIMIZATION ====================================
-m.max_mip_gap = 0.0
-
-
+m.max_mip_gap = 0.0  # Do not stop until the gap is zero -> OPTIMAL SOLUTION FOUND
 start = time.perf_counter()
 status = m.optimize(max_seconds=300)
 end = time.perf_counter()
 runtime= end - start
 
 # ==================================== MAIN ====================================
-
 # By the default the library try to find the optimal value if it fail returns the non-optimal results
 optimal = False
 if status == OptimizationStatus.OPTIMAL:
@@ -170,5 +146,11 @@ if m.num_solutions:
     
 else:
     print("No feasible solution found.")
+
+
+# ========== DEBUG INFO ========== #
+if debug_info:
+    print("\n=== DEBUG INFO ===")
+    print(f"Problem size: n={n}, W={W}, P={P}")
 
     
