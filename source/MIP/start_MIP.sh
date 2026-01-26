@@ -21,8 +21,12 @@ while true; do
     elif [[ "$choice" == "1" ]]; then
         # Ask parameters
         read -rp "Enter number of teams (int): " team 
-        python $SCRIPT_DIR/sts_milp.py $team $docker
-
+        read -rp "Do you want optimized version? (y/n): " yn
+        if [ $yn == "y" ]; then
+            python $SCRIPT_DIR/sts_milp.py $team "--optimized" $docker
+        else
+            python $SCRIPT_DIR/sts_milp.py $team $docker
+        fi        
     else
         echo "Invalid option. Try again."
     fi

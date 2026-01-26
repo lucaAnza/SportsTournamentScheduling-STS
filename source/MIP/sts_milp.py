@@ -10,10 +10,10 @@ from common.utils import *
 script_filename = 'solutions.json'
 docker_filename = '/app/outputs/MIP/solutions.json'
 default_filename = script_filename
-debug_info = True
+debug_info = False
     
 # ==================================== problem size ====================================
-n , W , P , _ , default_filename , _ , _ = get_user_settings(sys.argv , docker_filename , script_filename)
+n , W , P , _ , default_filename , opt_enable , _ = get_user_settings(sys.argv , docker_filename , script_filename)
 teams = range(n)
 weeks = range(W)
 periods = range(P)
@@ -21,7 +21,7 @@ periods = range(P)
 # all ordered pairs (i<j) (to avoid double match-ups)
 pairs = [(i, j) for i in teams for j in teams if i < j]
 
-
+solution_name = f'MIP (n = {n})'
 # ==================================== MODEL and VARIABLES ====================================
 # the model aim is to minimize the objective function
 m = Model(sense=minimize)
@@ -112,7 +112,12 @@ for t in teams:
 m.objective = xsum(balance)
 
 # ==================================== OPTIMIZATION ====================================
-m.max_mip_gap = 0.9  # Stop once you’re within 50% of optimal (even if not proven). To get optimal, set to 0.0
+print(opt_enable)
+if opt_enable:
+    m.max_mip_gap = 0 # Get the optimal solution
+    solution_name += " (OPT-version)"
+else:   
+    m.max_mip_gap = 0.5  # Stop once you’re within 50% of optimal (even if not proven). To get optimal, set to 0.0
 start = time.perf_counter()
 status = m.optimize(max_seconds=300)
 end = time.perf_counter()
@@ -142,7 +147,7 @@ if m.num_solutions:
                         schedule[p][w] = (j+1, i+1)   # j home, i away
 
     data = import_json_solution(default_filename)
-    data = add_solution_json(data , schedule , runtime , m.objective_value , optimal ,  solution_name=f'MIP (n = {n}) OPT = {optimal}')
+    data = add_solution_json(data , schedule , runtime , m.objective_value , optimal ,  solution_name=solution_name)
     export_json_solution(data , filename=default_filename)
     
 else:
