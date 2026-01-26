@@ -414,5 +414,13 @@
         "time": 51.86125285800017,
         "optimal": false,
         "obj": 162
+    },
+    "SAT2-(n=2)(PRECOMPUTING)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.013366762999794446,
+        "optimal": false,
+        "obj": 2
     }
 }

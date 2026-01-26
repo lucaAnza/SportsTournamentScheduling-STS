@@ -111,7 +111,7 @@ for t in teams:
 m.objective = xsum(balance)
 
 # ==================================== OPTIMIZATION ====================================
-m.max_mip_gap = 0.0  # Do not stop until the gap is zero -> OPTIMAL SOLUTION FOUND
+m.max_mip_gap = 0.9  # Stop once you’re within 50% of optimal (even if not proven). To get optimal, set to 0.0
 start = time.perf_counter()
 status = m.optimize(max_seconds=300)
 end = time.perf_counter()
@@ -141,7 +141,9 @@ if m.num_solutions:
                         schedule[p][w] = (j+1, i+1)   # j home, i away
 
     data = import_json_solution(default_filename)
-    data = add_solution_json(schedule , runtime , m.objective_value , optimal ,  solution_name=f'MIP (n = {n}) OPT = {optimal}')
+    print("Data pre add  : " , data)
+    data = add_solution_json(data , schedule , runtime , m.objective_value , optimal ,  solution_name=f'MIP (n = {n}) OPT = {optimal}')
+    print("Data post add : " , data)
     export_json_solution(data , filename=default_filename)
     
 else:
@@ -152,5 +154,6 @@ else:
 if debug_info:
     print("\n=== DEBUG INFO ===")
     print(f"Problem size: n={n}, W={W}, P={P}")
+    print(f"Optimal bound: {m.objective_bound}")
 
     

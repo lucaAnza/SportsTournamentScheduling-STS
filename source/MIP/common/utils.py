@@ -91,18 +91,19 @@ def add_solution_json(data , new_entry , solution_name = 'Name'):
     data[solution_name] = new_entry
     return data
 
-def add_solution_json(match_list, time, obj, is_optimal, solution_name="Name"):
+def add_solution_json(data , match_list, time, obj, is_optimal, solution_name="Name"):
 
-    data = {
-        solution_name: {
-            "sol": [
-                [list(match) if match is not None else None for match in row]
-                for row in match_list
-            ],
-            "time": round(float(time), 3),
-            "optimal": bool(is_optimal),
-            "obj": obj
-        }
+    if data is None:
+        return {}
+
+    data[solution_name] = {
+        "sol": [
+            [list(match) if match is not None else None for match in row]
+            for row in match_list
+        ],
+        "time": round(float(time), 3),
+        "optimal": bool(is_optimal),
+        "obj": obj
     }
     return data
 ################################# I/O FUNCTIONS #########################################
