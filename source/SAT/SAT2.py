@@ -8,6 +8,7 @@ from common.utils import *
 
 
 ################################# PARAMETERS ###############################
+debug_info = False
 script_filename = 'solutions.json'                   # Name if this script is executed for debugging
 docker_filename = '/app/outputs/SAT/solutions.json'  # Name if this script is executed from docker script
 SEED_FOR_REPRODUTION = 0       # set to 0 for default; >0 for reproduce an attempt
@@ -80,7 +81,7 @@ start1 = time.perf_counter()
 M = [[[Bool(f"M_{t1}_{t2}_w{w}") for w in range(weeks)] for t2 in range(team)] for t1 in range(team)] # t1,t2 plays in week w
 P = [[[Bool(f"P_t{t}_p{p}_w{w}") for w in range(weeks)] for p in range(periods)] for t in range(team)] # team t is assigned to period p in week w
 HOME = [[Bool(f"HOME_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is home in week w
-AWAY = [[Bool(f"AWAY_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is away in week w  (Added to make easily the optimization. TODO : Check the performance diff)
+AWAY = [[Bool(f"AWAY_{t}_w{w}") for w in range(weeks)] for t in range(team)] # team t is away in week w  
 model = Solver()
 # ============================== CONSTRAINTS ================================
 
@@ -131,11 +132,12 @@ if precomputing_version:
     
     # Define only the possible couple of match
     M_true = set()  # start with an empty set
+    # We are defining only the matches that can happen according to round-robin in a specific week
     for w, pairs in enumerate(rr_weeks):      
         for a, b in pairs:                     
             t1 = min(a, b)                     
             t2 = max(a, b)
-            M_true.add((t1, t2, w))            
+            M_true.add((t1, t2, w))  # Model not involved           
 
     # Say that is sat only if the generated couple are the one in M_true
     for t1 in range(team):
@@ -169,4 +171,20 @@ else:
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
 print("-------------------------------------------------------------------------------------------------")
 ################################# MAIN ###############################
+
+
+
+############################## DEBUG INFO ###############################
+if debug_info:
+    print("\n=== DEBUG INFO ===")
+    print(f"Problem size: n={team}, W={weeks}, P={periods}")
+    print("\nRound-robin generation example : " , f"n = {team}")
+    temp_round_robin = round_robin_pairs(team)
+    # Fix index
+    for i in range(len(temp_round_robin)):
+        temp_round_robin[i] = [(a+1 , b+1) for (a,b) in temp_round_robin[i]]
+    for w in range(weeks):
+        print("IN THE WEEK ", w ," will be played only this matches", " = " , temp_round_robin[w])
+        
+
 

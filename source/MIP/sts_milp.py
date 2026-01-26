@@ -91,19 +91,20 @@ for p in periods:
 # ====================================objective function ====================================
 home_cnt = [m.add_var(var_type=INTEGER, lb=0) for _ in teams]
 
+# Index precomputation (make the check faster in the loop)
+I_of = {t: [k for k,(i,j) in enumerate(pairs) if i == t] for t in teams}
+J_of = {t: [k for k,(i,j) in enumerate(pairs) if j == t] for t in teams}
 # Count home matches for each team (sum over all (w,p) where they're designated home)
 for t in teams:
-    A = xsum(home[w][p][k] for w in weeks for p in periods for k, (i, _) in enumerate(pairs) if i == t)  # home games where team t is the i (the smaller index in the pair)
-    B = xsum(home[w][p][k] for w in weeks for p in periods for k, (_, j) in enumerate(pairs) if j == t)  # home games where team t is the j (the larger index in the pair)
-    
-    for t in teams:
-        m += home_cnt[t] ==  A  +  B
+    A = xsum(home[w][p][k] for w in weeks for p in periods for k in I_of[t])
+    B = xsum(y[w][p][k] - home[w][p][k] for w in weeks for p in periods for k in J_of[t])
+    m += home_cnt[t] == A + B
 
 # Balance objective: minimize sum_t max(home_cnt[t], away_cnt[t]) with linearization
 max_ha = [m.add_var(var_type=INTEGER, lb=0) for _ in teams]
 balance = [m.add_var(var_type=INTEGER, lb=0) for _ in teams]
 for t in teams:
-    away = (W - 1) - home_cnt[t]
+    away = (W) - home_cnt[t]
     m += max_ha[t] >= home_cnt[t]
     m += max_ha[t] >= away
     m += balance[t] == (2*max_ha[t]-(n-1))
@@ -141,9 +142,7 @@ if m.num_solutions:
                         schedule[p][w] = (j+1, i+1)   # j home, i away
 
     data = import_json_solution(default_filename)
-    print("Data pre add  : " , data)
     data = add_solution_json(data , schedule , runtime , m.objective_value , optimal ,  solution_name=f'MIP (n = {n}) OPT = {optimal}')
-    print("Data post add : " , data)
     export_json_solution(data , filename=default_filename)
     
 else:
@@ -155,5 +154,6 @@ if debug_info:
     print("\n=== DEBUG INFO ===")
     print(f"Problem size: n={n}, W={W}, P={P}")
     print(f"Optimal bound: {m.objective_bound}")
+    print(f"Couples generated: {pairs}")
 
     
