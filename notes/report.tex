@@ -134,8 +134,8 @@ Throughout the constraints we use the following shorthand:
 
 \[
 \begin{aligned}
-\sum x_i \;\;\geq k &\quad\Longleftrightarrow\quad \text{``at least $k$ of the $x_i$ is true''}, \\[6pt]
-\sum x_i \;\;= k   &\quad\Longleftrightarrow\quad \text{``exactly $k$ of the $x_i$ is true''}, \\[6pt]
+\sum x_i \;\;\geq k &\quad\Longleftrightarrow\quad \text{``at least $k$ of the $x_i$ are true''}, \\[6pt]
+\sum x_i \;\;= k   &\quad\Longleftrightarrow\quad \text{``exactly $k$ of the $x_i$ are true''}, \\[6pt]
 \sum x_i \;\;\leq k &\quad\Longleftrightarrow\quad \text{``at most $k$ of the $x_i$ are true''}.
 \end{aligned}
 \]
@@ -155,14 +155,12 @@ Each encoding provides a different trade-off between the number of variables,
 the number of clauses, and the strength of constraint propagation.
 
 \vspace{1em}
-\textit{Model~2} extends the formulation of Model~1 by introducing additional constraints,
-thereby increasing the overall complexity of the problem. Unlike Model~1, this
-model was implemented using a single SAT encoding strategy and does not explore
-alternative encodings.
+\textit{Model~2} extends the formulation of Model~1 by adding further constraints and auxiliary decision variables. In contrast to Model~1, the implementation adopts a single SAT encoding approach (e.g., pairwise-style cardinality constraints) and does not perform a systematic comparison across alternative encodings.
 
-The goal of Model~2 is therefore not to compare different encoding techniques,
-but to evaluate the impact of a more expressive and constrained formulation on
-solver performance.
+Moreover, the implementation can optionally enable a \textbf{precomputing} phase: a round-robin pairing generator fixes in advance which team pairs are allowed to play in each week, and the corresponding ($M_{t_1,t_2,w}$) variables are forced to either true or false accordingly. This reduces the search space by eliminating week–pair symmetries and infeasible match placements before solving, allowing us to study how much of the performance change comes from a more constrained model versus additional upfront structural pruning.
+
+The purpose of Model~2 is therefore not to benchmark competing encoding techniques, but to assess how a more expressive formulation.
+
 
 
 \subsection{Decision variables}
@@ -284,8 +282,6 @@ To reduce symmetry, the matches for the first week / period are fixed:
 
 \subsubsection{Model - 2 }
 
-\todo{Check if you talk about pre-computing strategy}
-
 \paragraph{Main constraints.}
 
 \begin{itemize}
@@ -384,12 +380,15 @@ and platforms.
 
 \paragraph{Experimental results} \mbox{}\\
 
-The following tables reports the results of the SAT experiments. 
+The \textbf{following tables reports} the results of the SAT experiments. 
 Each row corresponds to a different value of $N$. 
 the value of the objective value obtained using different approach. If the instance is solved to optimality is in bold. In addition if the instance is proved to be
 unsatisfiable, it is indicate as \textit{UNSAT} and if no answer is obtained within the
 time limit are indicate it with \textit{N/A}.
-Each modeling approach have is own table (Tab.~\ref{tab:results_sat_m1} and Tab.~\ref{tab:results_sat_m2})
+Each modeling approach have is own table (Tab.~\ref{tab:results_sat_m1} and Tab.~\ref{tab:results_sat_m2}).  
+
+The \textbf{precomputation time} required to generate the round-robin pairs is not reported in the tables, as it is negligible: it remains below one second even for 
+$N\approx50$, and therefore has no practical impact on the overall computational performance.
 
 % MODEL 1 - TABLE
 \begin{table}[h]
@@ -412,19 +411,22 @@ $N$ & Bitwise & Heule & Pairwise & Sequential \\
 \end{table}
 
 % MODEL 2 - TABLE
-\todo{Complete the table}
 \begin{table}[h]
 \centering
 \begin{tabular}{c|c|c}
 \hline
 $N$ & Standard & Pre-computing  \\
 \hline
-6   & \textbf{0}  & \textbf{0}   \\
-8   & 2           & \textbf{0}    \\
-10  & 4           & 2             \\
-12  & --          & 6             \\
-14  & --          & --                    \\
-16  & UNSAT       & UNSAT             \\
+2   & \textbf{2}  & \textbf{2}   \\
+4   & UNSAT  & UNSAT   \\
+6   & \textbf{6}  & \textbf{6}   \\
+8   & \textbf{8}           & \textbf{8}    \\
+10  & \textbf{10}           & \textbf{10}           \\
+12  & \textbf{12}          & \textbf{12}             \\
+14  & \textbf{14}          & \textbf{14}                    \\
+16  & 46       & \textbf{16}             \\
+18  & N/A       & 162             \\
+20  & N/A       & N/A             \\
 \hline
 \end{tabular}
 \caption{Experimental results of Model 2}
@@ -446,7 +448,7 @@ Before defining the variables, we compute the list $L$ of the possible match-ups
 If $n$ is the number of teams, we have $|L|=\binom{n}{2} = \frac{n!}{2!(n-2)!}$, i.e. $\binom{n}{2}$ games to be played.
 
 
-Our decision variables are then two 3-dimensional tensors $Y_{w,p,(i,j)}$ and $H_{w,p,(i,j)}$ of boolean values, where
+Our decision variables are then two 3-dimensional tensors of boolean values $Y_{w,p,(i,j)}$ and $H_{w,p,(i,j)}$, where
 \begin{itemize}
     \item $Y_{w,p,(i,j)} = 1 \iff$ teams $i$ and $j$ are playing one against the other in week $w$ in period $p$;
     \item $H_{w,p,(i,j)} = 1 \iff$ team $i$ (the team with lowest index since $\forall (i,j) \in L$, $i<j$) is playing home in week $w$ in period $p$.
@@ -465,7 +467,7 @@ We had to find another way to compute
 \]
 For the seek of brevity we will write $h_t$ and $a_t$ instead of $\#\text{home\_games}(t)$ and $\#\text{away\_games}(t)$ respectively.
 
-Since 
+Let's rewrite the expression of the objective function in a more efficient way: since 
 \[
 h_t + a_t = W = n-1,
 \]
@@ -494,7 +496,7 @@ we can then state that
 
 Once we define a function to sum up the home games and assigning the value to an integer variable $h_t$ for each team $t$, the away games are computed as $a_t = W - h_t$, where $W=n-1$ is the total number of games played by each team.
 
-We then compute the maximum between $a_t$ and $h_t$ defining a new integer variable $max(H/A)_t$ and imposing it to be greater or equal than both $a_t$ and $h_t$, in this way we avoid using a max function, but we just use linear inequalities. Since we look for a minimal value of the objective function we don't need to set an upper bound to the $max(H/A)_t$ values.
+We then compute the maximum between $a_t$ and $h_t$ defining a new integer variable $max(H/A)_t$ and imposing it to be greater or equal than both $a_t$ and $h_t$, in this way we avoid using a max function, using instead just linear inequalities. Since we look for a minimal value of the objective function we don't need to set an upper bound to the $max(H/A)_t$ values.
 
 Now we can compute the total balance as
 \[

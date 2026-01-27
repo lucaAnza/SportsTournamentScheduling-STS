@@ -85,6 +85,7 @@ For example, if a model only shows _n = 12_ and no other values, it means that 1
 2. In **CP** when the solution in UNSAT make the output better
 3. In **CP** add the possibility to choose to optimize or not
 4. Add the possibility to choose the solver into the **CP** scripts
+5. To an experiment in **MIP** using max_time  = 15s and then comment or uncomment the sospect constraint!
 
 
 

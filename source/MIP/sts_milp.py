@@ -18,8 +18,8 @@ teams = range(n)
 weeks = range(W)
 periods = range(P)
 
-# all ordered pairs (i<j) (to avoid double match-ups)
-pairs = [(i, j) for i in teams for j in teams if i < j]
+pairs = [(i, j) for i in teams for j in teams if i < j] # all ordered pairs (i<j) (to avoid double match-ups)
+pair_idx = {(i, j): k for k, (i, j) in enumerate(pairs)} # Precompute pair -> index (fast lookup)
 
 solution_name = f'MIP (n = {n})'
 # ==================================== MODEL and VARIABLES ====================================
@@ -79,13 +79,27 @@ for w in weeks:
         # but we already have exactly one game per (w,p), so no extra constraint needed
 
 # ==================================== symmetry breaking ====================================
-# Fix the first week to be (0,1),(2,3),… (and fix home team) 
-# Fix the team 0 to play into the diagonal
+# Breaking1 : fix the first week
 for p in periods:
-  idx = pairs.index((2*p,2*p+1))  # Obtain the index of the pair (2p,2p+1)
-  m += y[0][p][idx] == 1
-  m += home[0][p][idx] == 1
-  m += xsum(home[p][p][k] for k,(i,j) in enumerate(pairs) if i == 0) ==1
+    idx = pairs.index((2*p,2*p+1))  # Obtain the index of the pair (2p,2p+1)
+    m += y[0][p][idx] == 1    # Fix the first week to be (0,1),(2,3),… (and fix home team) 
+    m += home[0][p][idx] == 1 # Fix the first week to be (0,1),(2,3),… (and fix home team)
+
+# Breaking2: fix which opponent team 0 faces in each week (period is free)
+for w in range(W):     # w = 0..W-1
+    opp = w + 1                   # team 0 plays team 1 in week 0, team 2 in week 1, ...
+    k = pair_idx[(0, opp)]        # (0,opp) exists because pairs are i<j
+    m += xsum(y[w][p][k] for p in periods) == 1
+
+# Breaking3: team 0 plays in the diagonal slots (w=p, p) for p=0..P-1
+for p in range(P):
+    m += xsum(
+        y[p][p][k]
+        for k, (i, j) in enumerate(pairs)
+        if i == 0   # because pairs are i<j, team 0 appears only as i
+    ) == 1
+
+
 
 
 # ====================================objective function ====================================
@@ -112,7 +126,6 @@ for t in teams:
 m.objective = xsum(balance)
 
 # ==================================== OPTIMIZATION ====================================
-print(opt_enable)
 if opt_enable:
     m.max_mip_gap = 0 # Get the optimal solution
     solution_name += " (OPT-version)"
