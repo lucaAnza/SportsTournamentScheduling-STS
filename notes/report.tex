@@ -123,7 +123,7 @@ Mark proven optima in \textbf{bold}. Use \texttt{UNSAT} if proven infeasible; us
 \end{tabular}
 \end{table}
 
-% ---------------- SAT ----------------
+% --------------------------------- SAT ------------------------------------------------------
 \clearpage
 \section{SAT Model}
 
@@ -226,7 +226,7 @@ home and away games for each team. Formally:
       - \Big(W - \sum_{w=1}^W HOME_{t,w}\Big) \right|.
 \]
 
-
+% ======= CONSTRAINT =======
 \subsection{Constraints}
 
 \subsubsection{Model - 1 }
@@ -347,9 +347,10 @@ M_{t_1,t_2,w} =
 \end{itemize}
 
 
-% === Validation ===
+% ======= VALIDATION SAT =======
 
 \subsection{Validation}
+\label{sub:validation_sat}
 
 \paragraph{Experimental Setup} \mbox{}\\
 \\
@@ -438,7 +439,7 @@ $N$ & Standard & Pre-computing  \\
 
 
 
-% ---------------- MIP ----------------
+% --------------------------------- MIP ------------------------------------------------------
 \clearpage
 \section{MIP Model}
 This section is mandatory.
@@ -506,7 +507,7 @@ that is a valid objective function being linear in the $max(H/A)_t$ variables.
 
 
 
-
+% ======= CONSTRAINTS MIP =======
 \subsection{Constraints}
 
 \subsubsection{Variable linking constraint}
@@ -551,23 +552,78 @@ With this model we don't need to explicitly ask for exactly two teams in each sl
 
 \subsubsection{Symmetry breaking constraints}
 \begin{itemize}
+    \todo{For each constraint you can add an explanation img like this}
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\linewidth]{Screen.png}
+        \caption{Enter Caption}
+        \label{fig:placeholder}
+    \end{figure}
+
     \item[(C4)] We fix each match in the first week by imposing:
     \begin{align*}
         \forall p =1,\dots,P\qquad   &Y_{1,p,(2p-1,\,2p)}=1\\
         &H_{1,p,(2p-1,\,2p)}=1
     \end{align*}
     
-    
-    \item[(C4)] We can further restrict the problem by imposing that $team1$ plays the first P matches at home; this can be possible since we don't care about the H/A alternation during the weeks and it helps to obtain the optimal value of the objective function because it ensures at least $P$ home matches for $team1$. We formulate it as follows:
+    \item[(C5)] Since the weeks are interchangeable in our formulation (constraints and objective do not depend on the week index), we can break the week-permutation symmetry by fixing the opponent of \(team1\) in each week, without fixing the period.
     \[
-    \forall p = 1,\dots,P\qquad\sum_{j=2}^TH_{p,p, (1,\,j)}=1.
+    \forall w = 1,\dots,W \qquad \sum_{p \in \mathcal{P}} y_{w,p,(1,\,w+1)} = 1,
     \]
-    We're summing over the remaining teams $j$ cause we don't want to restrict by choosing the away team.
+    i.e., in week \(w\) team \(1\) plays against team \(w+1\) in some period \(p \in \mathcal{P}\).
+
+    \item[(C6)] In addition we break symmetry by fixing the main diagonal of the schedule matrix: in each diagonal slot \((w,p)=(p,p)\) (for the first \(P\) weeks), team \(1\) must be scheduled, without fixing the opponent. Formally:
+    \[
+    \forall p = 1,\dots,P \qquad
+    \sum_{j=2}^{T} y_{p,p,(1,j)} = 1.
+    \]
+
+
+
+    
 \end{itemize}
 
+% ======= VALIDATION MIP =======
 \subsection{Validation}
-Run on at least one MIP solver; solver-independent modeling (e.g., \texttt{AMPL}) is a plus.
-Report as in CP.
+\paragraph{Experimental Setup} \mbox{}\\
+All experiments for the MIP formulation were conducted using a Mixed-Integer Programming solver through the \texttt{python-mip} library. The implementation is provided in Python, and the solver is invoked via the \texttt{python-mip} API.
+
+The experimental procedure follows the same workflow adopted for the SAT-based experiments (Section~\ref{sub:validation_sat}). 
+
+\paragraph{Experimental results} \mbox{}\\
+
+The \textbf{following tables report} the results of the MIP experiments.
+Each row corresponds to a different value of $N$.
+For each instance, the tables report the objective value obtained by the different MIP modeling approaches.
+When an instance is solved to optimality, the corresponding objective value is shown in \textbf{bold}.
+If no feasible solution is found within the allotted time limit, the result is reported as \textit{N/A}.
+
+% MODEL MIP - TABLE 
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c|c|c|c}
+\hline
+$N$ & Standard & Standard + Simmetry breaking \\
+\hline
+2   & \textbf{2} & \textbf{2}  \\ 
+4   & UNSAT & UNSAT  \\
+6   & \textbf{6} & \textbf{6}  \\
+8   & \textbf{8} & \textbf{8}  \\
+10  & \textbf{10} & \textbf{10}  \\
+12  & \textbf{12} & \textbf{12}  \\
+14  & N/A & \textbf{14}  \\
+16  & N/A & N/A  \\ 
+18  & N/A & N/A  \\
+\hline
+
+\end{tabular}
+\caption{Experimental results of MIP Model}
+\label{tab:results_mip_m1}
+\end{table}
+
+
+
+
 
 % --------------- Conclusions ---------------
 \section{Conclusions}
@@ -576,7 +632,7 @@ Summarize findings, modeling trade-offs, and comparative performance insights.
 % --------------- Authorship ---------------
 \section*{Authenticity and Author Contribution Statement}
 We declare that the work reported here is our own and properly cites all external ideas and sources.
-Parts of this project (text/code/experiments) were assisted by AI tools where indicated; we disclose the tools used and the exact sections where AI assistance was applied.
+Parts of this project (text/code/experiments) were assisted by AI tools where indicated; we disclose the tools used and the exact sections where AI assistance was applied expect for the part where it was used to improve the quality of the report, such as grammar, sentence formulation.
 \\[0.5em]
 \textbf{Author contributions.} Briefly outline the role of each author (modeling, implementation, experiments, analysis, writing).
 
