@@ -23,7 +23,8 @@ while true; do
         
         start=$(date +%s.%N)
         # minizinc -D "n=$team" $SCRIPT_DIR/STS_matchVar_first\ column.mzn > output.txt
-        minizinc --solver Gecode --two-pass -D "n=$team" "$SCRIPT_DIR/STS_matchVar_first column.mzn" > output.txt
+        # minizinc --solver Gecode --two-pass -D "n=$team" "$SCRIPT_DIR/STS_matchVar_first column.mzn" > output.txt
+        minizinc --solver Gecode -D "n=$team" "$SCRIPT_DIR/STS_matchVar_first column.mzn" > output.txt
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
         python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker"

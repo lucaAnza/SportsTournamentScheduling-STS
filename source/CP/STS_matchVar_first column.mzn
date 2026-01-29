@@ -1,88 +1,109 @@
-%******SPORT TOURNAMENT SCHEDULING*********
+%*** SPORT TOURNAMENT SCHEDULING (OPPONENT MODEL) ***
+
+%------------------ parameters ----------------------
+int: n;                         % number of teams (even)
+set of int: TEAM   = 1..n;
+set of int: WEEK   = 1..(n-1);
+set of int: PERIOD = 1..(n div 2);
+
+constraint n mod 2 = 0;
 
 %------------------ variables -----------------------
-int: n;
-set of int: TEAM = 1..n;
-set of int: PERIOD = 1..(n div  2);
-set of int: WEEK = 1..(n-1);
 
-% match variable
-% 1 if (t1 v t2) in week w
-array[TEAM, TEAM, WEEK] of var {0, 1}: M;
+% opponent[t,w] = team that t plays against in week w
+array[TEAM, WEEK] of var TEAM: opp;
 
-% H/A variable
-% 1 if team t plays Home in week w
-array[TEAM, WEEK] of var {0,1}: H;
+% home[t,w] = true if team t plays at home in week w
+array[TEAM, WEEK] of var bool: home;
 
-% Period variable
-% 1 if  team t plays in period p in week w
-array[TEAM, PERIOD, WEEK] of var {0, 1}: P;
+% period[t,w] = period in which team t plays in week w
+array[TEAM, WEEK] of var PERIOD: period;
 
-% ----------- linking variables ---------------------
+%------------------ core constraints ----------------
 
-%if (t1 v t2) is in week w -> they share the same period
-%                             and one plays home and the other away
-constraint forall(t1, t2 in TEAM where t1 < t2 , w in WEEK)
-                 ( ( M[t1,t2,w]==1 )  -> exists(p in PERIOD)( P[t1,p,w]==1 /\ P[t2,p,w]==1));
-                 
-constraint forall(t1 in TEAM, t2 in TEAM, w in WEEK)
-                 ( M[t1,t2,w]==1 -> (( H[t1, w]==1   /\  H[t2, w]==0 ) \/ ( H[t2, w]==1 /\ H[t1, w]==0 ) ) );
-  
-% ---------------- constraints ----------------------
+% no team plays itself
+constraint forall(t in TEAM, w in WEEK)(
+  opp[t,w] != t
+);
 
-%even n
-constraint (n mod 2) == 0;
+% matches are symmetric
+constraint forall(t in TEAM, w in WEEK)(
+  opp[opp[t,w], w] = t
+);
 
-% max 2 games in a period
-constraint forall(t in TEAM, p in PERIOD) (sum(w in WEEK)(P[t,p,w]) <= 2);
+% every team pair meets exactly once
+constraint forall(t1, t2 in TEAM where t1 < t2)(
+  sum(w in WEEK)(bool2int(opp[t1,w] == t2)) = 1
+);
 
-% max 2 teams for every match
-constraint forall(p in PERIOD, w in WEEK) (sum(t in TEAM)(P[t,p,w]) = 2);
+%------------------ home / away ---------------------
 
-% exactly 1 game pro week
-constraint forall(t in TEAM, w in WEEK) (sum (p in PERIOD)(P[t,p,w]) = 1);
+% exactly one home team per match
+constraint forall(t in TEAM, w in WEEK)(
+  home[t,w] != home[opp[t,w], w]
+);
 
-% no match between same team
-% we avoid having (t1, t2) couples and we just have ordered pairs (e.g. (1,2), (5,7))
-constraint forall(t1 in TEAM, t2 in TEAM, w in WEEK) ((t1>=t2) -> M[t1,t2,w] = 0);
+%------------------ periods -------------------------
 
-constraint forall(t1, t2 in TEAM where t1<t2) (sum (w in WEEK)(M[t1,t2,w]) = 1);
+% teams in a match share the same period
+constraint forall(t in TEAM, w in WEEK)(
+  period[t,w] = period[opp[t,w], w]
+);
 
-% -------------- symmetry breaking constraints ----------------
+% exactly one match per period per week
+constraint forall(p in PERIOD, w in WEEK)(
+  sum(t in TEAM)(bool2int(period[t,w] = p)) = 2
+);
 
-%!!! fix first column (1,2),(3,4)...
+% optional: limit how often a team uses the same period
+constraint forall(t in TEAM, p in PERIOD)(
+  sum(w in WEEK)(bool2int(period[t,w] = p)) <= 2
+);
 
-% first week games are (1v2),(3v4) ,... H/A not restricted
-constraint forall(p in PERIOD)(M[2*p-1,2*p,1]==1);
-% first match is (1v2), second is (3v4)..
-constraint forall(p in PERIOD) (P[2*p,p,1]==1);
-% restriction on H/A
-constraint forall(p in PERIOD) (H[2*p,1]==0 /\
-                                H[2*p-1,1]==1); %redundant but improving
+%------------------ symmetry breaking ----------------
 
-%first row
-%constraint forall(w in WEEK)   (P[w,1,w]==1);
+% fix first week pairings
+constraint forall(p in PERIOD)(
+  opp[2*p-1,1] = 2*p /\
+  opp[2*p,1]   = 2*p-1
+);
 
-%diagonal team1
-%constraint forall(p in PERIOD) ((P[1,p,p]==1) /\ (H[1,p]==1));
-% team1 starts home
-%constraint forall(i in 1..(n div 2)-1) ( H[1,i] == 1 );
+% fix home/away for first week
+constraint forall(p in PERIOD)(
+  home[2*p-1,1] = true /\
+  home[2*p,1]   = false
+);
 
-% -------------------- objective function ---------------------
+constraint forall(p in PERIOD)(
+  period[2*p-1, 1] = p /\
+  period[2*p,   1] = p
+);
 
-%balance
-array[TEAM] of var int: H_matches;
-constraint forall(t in TEAM) (H_matches[t] == sum(w in WEEK)(H[t,w]));
-var int: balance = sum(t in TEAM) (abs(2*H_matches[t]-(n-1)));
+% non decreasing periods for team 1
+constraint forall(w in 1..(n-2))(
+  period[1,w] <= period[1,w+1]
+);
 
-% ---------------------- solve --------------------------------
+%------------------ objective -----------------------
+
+array[TEAM] of var int: home_count;
+constraint forall(t in TEAM)(
+  home_count[t] = sum(w in WEEK)(bool2int(home[t,w]))
+);
+
+var int: balance =
+  sum(t in TEAM)(
+    max(2*home_count[t]-(n-1), (n-1)-2*home_count[t])
+  );
 
 solve minimize balance;
 
-% -------------------- output ---------------------
+%------------------ output --------------------------
+
+% -------------------- output (same format as 1st model) --------------------
 
 output
-["\nn: " ++ show(n) ++ "\n"] ++ 
+["\nn: " ++ show(n) ++ "\n"] ++
 [
   "\nsol: "
 ] ++
@@ -90,16 +111,18 @@ output
   "[" ++
   concat([
     let {
-      array[int] of int: home = [t | t in TEAM where fix(P[t,p,w])=1 /\ fix(H[t,w])=1],
-      array[int] of int: away = [t | t in TEAM where fix(P[t,p,w])=1 /\ fix(H[t,w])=0]
+      array[int] of int: ht = [t | t in TEAM
+                              where fix(period[t,w]) = p /\ fix(home[t,w]) = true],
+      array[int] of int: at = [t | t in TEAM
+                              where fix(period[t,w]) = p /\ fix(home[t,w]) = false]
     } in
-    if length(home)=1 /\ length(away)=1 then
-      "[" ++ show(home[1]) ++ "," ++ show(away[1]) ++ "]"
+    if length(ht)=1 /\ length(at)=1 then
+      "[" ++ show(ht[1]) ++ "," ++ show(at[1]) ++ "]"
     else
       ""
     endif
-  | w in WEEK]) ++ "]" ++  % all weeks for fixed p
-  if p < max(PERIOD) then "," else "" endif ++ "\n"
+  | w in WEEK]) ++ "]" ++
+  (if p < max(PERIOD) then "," else "" endif) ++ "\n"
 | p in PERIOD
 ] ++
 [

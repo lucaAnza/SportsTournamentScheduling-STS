@@ -16,6 +16,10 @@ def process_output_string(output_str, data, total_time, solution_name="myAlgorit
     obj_val = None
     in_solution = False
 
+    # If the first line is "=====UNSATISFIABLE=====", return empty solution
+    if lines and lines[0].strip() == "=====UNSATISFIABLE=====":
+        return None , None
+
     for line in lines:
         stripped = line.strip()
         if not stripped:
@@ -154,6 +158,8 @@ if __name__ == '__main__':
     data = import_json_solution(default_filename)
     output = import_raw_solution()
     new_entry , n = process_output_string(output , data , time)
-    data = add_solution_json(data , new_entry , f'CP (n = {n})')
-    export_json_solution(data , default_filename)
-
+    if(new_entry is None or n is None):
+        print("No solution found (UNSATISFIABLE). No entry added to the json file.")
+    else:
+        data = add_solution_json(data , new_entry , f'CP (n = {n})')
+        export_json_solution(data , default_filename)
