@@ -96,7 +96,7 @@ var int: balance =
     max(2*home_count[t]-(n-1), (n-1)-2*home_count[t])
   );
 
-solve satisfy;
+solve minimize balance;
 
 %------------------ output --------------------------
 

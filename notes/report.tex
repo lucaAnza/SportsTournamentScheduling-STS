@@ -26,9 +26,9 @@ Martino Michelotti \texttt{martino.michelotti@studio.unibo.it}
 \begin{document}
 \maketitle
 
-\todo{Delete prof introduction}
+\todo{Maybe ask chat to look for some reference we have only one}
 \section{Introduction}
-This report addresses the solution of the well-known \emph{Sports Tournament Scheduling Problem (STS)}.
+This report addresses the solution of the well-known \emph{Sports Tournament Scheduling Problem (STS\cite{csplib_prob026})}.
 The focus is on presenting different modeling approaches and optimization techniques to handle the scheduling constraints and objectives.  
 Throughout the report we describe the common elements that underlie all models: the inputs, symbols, shared objective variable and bounds, global pre-processing, and any assumptions. 
 To avoid repetition, later sections will refer back to this introduction whenever these shared components are required.
@@ -72,6 +72,7 @@ and expresses the high-level goal of fairness in the tournament.
 
 
 % ---------------- CP ----------------
+\todo{Write the cp report}
 \clearpage
 \section{CP Model}
 This section is mandatory.
@@ -355,7 +356,7 @@ M_{t_1,t_2,w} =
 \paragraph{Experimental Setup} \mbox{}\\
 \\
 All experiments were conducted using the \texttt{Z3} solver for SAT and
-optimization. The implementation is provided in Python, and the solver is
+optimization (\cite{z3}). The implementation is provided in Python, and the solver is
 invoked through the \textbf{Z3 API}. 
 \\
 The experiments were run on two different operating systems, namely
@@ -552,19 +553,19 @@ With this model we don't need to explicitly ask for exactly two teams in each sl
 
 \subsubsection{Symmetry breaking constraints}
 \begin{itemize}
-    \todo{For each constraint you can add an explanation img like this}
-    \begin{figure}[h]
-        \centering
-        \includegraphics[width=0.5\linewidth]{Screen.png}
-        \caption{Enter Caption}
-        \label{fig:placeholder}
-    \end{figure}
-
+    
     \item[(C4)] We fix each match in the first week by imposing:
     \begin{align*}
         \forall p =1,\dots,P\qquad   &Y_{1,p,(2p-1,\,2p)}=1\\
         &H_{1,p,(2p-1,\,2p)}=1
     \end{align*}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\linewidth]{MIP_C4.png}
+        \caption{C4 Scheme}
+        \label{fig:placeholder}
+    \end{figure}
     
     \item[(C5)] Since the weeks are interchangeable in our formulation (constraints and objective do not depend on the week index), we can break the week-permutation symmetry by fixing the opponent of \(team1\) in each week, without fixing the period.
     \[
@@ -572,11 +573,25 @@ With this model we don't need to explicitly ask for exactly two teams in each sl
     \]
     i.e., in week \(w\) team \(1\) plays against team \(w+1\) in some period \(p \in \mathcal{P}\).
 
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\linewidth]{MIP_C5.png}
+        \caption{C5 Scheme}
+        \label{fig:placeholder}
+    \end{figure}
+
     \item[(C6)] In addition we break symmetry by fixing the main diagonal of the schedule matrix: in each diagonal slot \((w,p)=(p,p)\) (for the first \(P\) weeks), team \(1\) must be scheduled, without fixing the opponent. Formally:
     \[
     \forall p = 1,\dots,P \qquad
     \sum_{j=2}^{T} y_{p,p,(1,j)} = 1.
     \]
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\linewidth]{MIP_C6.png}
+        \caption{C6 Scheme}
+        \label{fig:placeholder}
+    \end{figure}
 
 
 
@@ -586,7 +601,7 @@ With this model we don't need to explicitly ask for exactly two teams in each sl
 % ======= VALIDATION MIP =======
 \subsection{Validation}
 \paragraph{Experimental Setup} \mbox{}\\
-All experiments for the MIP formulation were conducted using a Mixed-Integer Programming solver through the \texttt{python-mip} library. The implementation is provided in Python, and the solver is invoked via the \texttt{python-mip} API.
+All experiments for the MIP formulation were conducted using a Mixed-Integer Programming solver through the \texttt{python-mip} library (\cite{pythonmip}). The implementation is provided in Python, and the solver is invoked via the \texttt{python-mip} API.
 
 The experimental procedure follows the same workflow adopted for the SAT-based experiments (Section~\ref{sub:validation_sat}). 
 
@@ -636,13 +651,40 @@ Parts of this project (text/code/experiments) were assisted by AI tools where in
 \\[0.5em]
 \textbf{Author contributions.} Briefly outline the role of each author (modeling, implementation, experiments, analysis, writing).
 
+\paragraph{Author contributions.}
+Luca Anzaldi developed the SAT-based formulations, including both Model~1 and
+Model~2. He was responsible for the reformulation of the MIP constraints, the
+configuration and setup of all scripts, Docker environments, and auxiliary
+tools required to run the experiments. He also carried out a comprehensive
+revision of the entire report.
+
+Martino Michelotti developed the complete CP model and designed the base MIP
+formulation. He also contributed to the final revision of the report.
+
 % --------------- References ---------------
 \begin{thebibliography}{9}
 
 \bibitem{minizinc}
-MiniZinc: The Modeling Language,
-\url{https://www.minizinc.org/}.
+MiniZinc: The Modeling Language.\\
+\url{https://www.minizinc.org/}
 
+\bibitem{csplib_prob026}
+CSPLib, \emph{Problem 026: Sports Tournament Scheduling (prob026)}.\\
+\url{https://www.csplib.org/Problems/prob026/}
+(Accessed: 2026-01-29)
+
+\bibitem{z3}
+Leonardo de Moura and Nikolaj Bj{\o}rner.
+\emph{Z3: An Efficient SMT Solver}.
+In \emph{Proceedings of the 14th International Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS)}, 
+LNCS 4963, pp. 337--340, Springer, 2008.\\
+\url{https://github.com/Z3Prover/z3}
+
+\bibitem{pythonmip}
+Henrique R. Lopes, Thiago A. F. S. Santos, and Tallys H. Y. Lopes.
+\emph{Python-MIP: A Python Toolbox for Modeling and Solving Mixed-Integer Linear Programs}.
+SoftwareX, Volume 12, 2020.\\
+\url{https://www.python-mip.com/}
 
 \end{thebibliography}
 
