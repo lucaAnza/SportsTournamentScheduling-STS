@@ -45,7 +45,7 @@ while true; do
         read -rp "Enter number of teams (int): " team
         
         start=$(date +%s.%N)
-        minizinc --solver Gecode -D "n=$team" "$SCRIPT_DIR/STS_matchVar_first column_optimized.mzn" > output.txt
+        minizinc --solver Gecode -D "n=$team" "$SCRIPT_DIR/STS_matchVar_first column_opt.mzn" > output.txt
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
         python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker"
@@ -55,7 +55,7 @@ while true; do
         read -rp "Enter number of teams (int): " team
         
         start=$(date +%s.%N)
-        minizinc --solver Chuffed -D "n=$team" "$SCRIPT_DIR/STS_matchVar_first column_optimized.mzn" > output.txt
+        minizinc --solver Chuffed -D "n=$team" "$SCRIPT_DIR/STS_matchVar_first column_opt.mzn" > output.txt
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
         python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker"

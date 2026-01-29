@@ -3,7 +3,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.02,
+        "time": 0.03,
         "optimal": false,
         "obj": 2
     },
