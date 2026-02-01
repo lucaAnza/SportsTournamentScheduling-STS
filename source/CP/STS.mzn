@@ -97,10 +97,9 @@ var int: balance =
   );
 
 solve minimize balance;
+int: balance_lb = (n-1) mod 2;   % = 1 when n is even, = 0 when n is odd
 
 %------------------ output --------------------------
-
-% -------------------- output (same format as 1st model) --------------------
 
 output
 ["\nn: " ++ show(n) ++ "\n"] ++
@@ -126,6 +125,6 @@ output
 | p in PERIOD
 ] ++
 [
-  "\nopt: true\n",
+  "\nopt: " ++ (if fix(balance) = balance_lb then "true" else "false" endif) ++ "\n",
   "\nobj: ", show(balance), "\n"
 ];
