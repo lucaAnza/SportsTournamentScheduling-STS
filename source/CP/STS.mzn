@@ -79,9 +79,9 @@ constraint forall(p in PERIOD)(
   period[2*p,   1] = p
 );
 
-% non decreasing periods for team 1
-constraint forall(w in 1..(n-2))(
-  period[1,w] <= period[1,w+1]
+
+constraint forall(w in 1..(n-2)) (
+    opp[1,w] < opp[1,w+1]
 );
 
 %------------------ objective -----------------------
@@ -92,7 +92,7 @@ constraint forall(t in TEAM)(
 );
 
 var int: balance =
-  sum(t in TEAM)(
+  max(t in TEAM)(
     max(2*home_count[t]-(n-1), (n-1)-2*home_count[t])
   );
 

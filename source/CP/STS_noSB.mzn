@@ -60,29 +60,6 @@ constraint forall(t in TEAM, p in PERIOD)(
   sum(w in WEEK)(bool2int(period[t,w] = p)) <= 2
 );
 
-%------------------ symmetry breaking ----------------
-
-% fix first week pairings
-constraint forall(p in PERIOD)(
-  opp[2*p-1,1] = 2*p /\
-  opp[2*p,1]   = 2*p-1
-);
-
-% fix home/away for first week
-constraint forall(p in PERIOD)(
-  home[2*p-1,1] = true /\
-  home[2*p,1]   = false
-);
-
-constraint forall(p in PERIOD)(
-  period[2*p-1, 1] = p /\
-  period[2*p,   1] = p
-);
-
-% non decreasing periods for team 1
-constraint forall(w in 1..(n-2))(
-  period[1,w] <= period[1,w+1]
-);
 
 %------------------ objective -----------------------
 
@@ -92,11 +69,11 @@ constraint forall(t in TEAM)(
 );
 
 var int: balance =
-  sum(t in TEAM)(
+  max(t in TEAM)(
     max(2*home_count[t]-(n-1), (n-1)-2*home_count[t])
   );
 
-solve satisfy;
+solve minimize balance;
 
 %------------------ output --------------------------
 

@@ -9,6 +9,17 @@ docker_filename = '/app/outputs/CP/solutions.json'
 
 
 # ========== HELP FUNCTIONS ========== #
+return_codes = {
+    0: "SAT",
+    1: "UNSAT",
+    2: "TIME_EXCEEDED"
+}
+
+
+# Return code : 
+# 0 -> SAT
+# 1 -> UNSAT
+# 2 -> TIME_EXCEEDED
 def process_output_string(output_str, data, total_time, solution_name="myAlgorithm"):
     lines = output_str.splitlines()
     solution_lines = []
@@ -18,8 +29,11 @@ def process_output_string(output_str, data, total_time, solution_name="myAlgorit
 
     # If the first line is "=====UNSATISFIABLE=====", return empty solution
     if lines and lines[0].strip() == "=====UNSATISFIABLE=====":
-        return None , None
+        return None , None , 1
 
+    # If the first line is "=====UNKNOWN=====", return empty solution
+    if lines and lines[0].strip() == "=====UNKNOWN=====":
+        return None , None , 2     
     for line in lines:
         stripped = line.strip()
         if not stripped:
@@ -67,7 +81,7 @@ def process_output_string(output_str, data, total_time, solution_name="myAlgorit
         'obj': obj_val
     }
     
-    return new_entry , n
+    return new_entry , n , 0
 
 def import_raw_solution(filename='output.txt'):
     try:
@@ -154,12 +168,15 @@ if __name__ == '__main__':
         docker_string = sys.argv[2]
         if docker_string == '--docker':
             default_filename = docker_filename
+    
+    if len(sys.argv) > 3:
+        version_name = sys.argv[3]
 
     data = import_json_solution(default_filename)
     output = import_raw_solution()
-    new_entry , n = process_output_string(output , data , time)
-    if(new_entry is None or n is None):
-        print("No solution found (UNSATISFIABLE). No entry added to the json file.")
+    new_entry , n , return_code = process_output_string(output , data , time)
+    if(return_code != 0 ):
+        print(f"No solution found ({return_codes.get(return_code, 'UNKNOWN')}). No entry added to the json file.")
     else:
-        data = add_solution_json(data , new_entry , f'CP (n = {n})')
+        data = add_solution_json(data , new_entry , f'CP (n = {n}) - {version_name}')
         export_json_solution(data , default_filename)
