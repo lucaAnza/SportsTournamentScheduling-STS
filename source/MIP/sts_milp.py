@@ -145,7 +145,7 @@ if status == OptimizationStatus.OPTIMAL:
 elif status == OptimizationStatus.FEASIBLE:
     print(f"✅ Feasible solution found but not proven optimal (opt = {m.objective_value})")
 else:
-    print("No solution found.")
+    print("❌ No solution found (UNSAT OR TIME_EXCEEDED)")
 
 if m.num_solutions:
     # Build matrix: periods x weeks
@@ -163,8 +163,6 @@ if m.num_solutions:
     data = add_solution_json(data , schedule , runtime , m.objective_value , optimal ,  solution_name=solution_name)
     export_json_solution(data , filename=default_filename)
     
-else:
-    print("No feasible solution found.")
 
 
 # ========== DEBUG INFO ========== #

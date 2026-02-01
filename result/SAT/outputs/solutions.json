@@ -3,7 +3,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.03,
+        "time": 0.01,
         "optimal": false,
         "obj": 2
     },
@@ -57,7 +57,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.02,
+        "time": 0.01,
         "optimal": true,
         "obj": 2
     },
@@ -129,7 +129,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.02,
+        "time": 0.01,
         "optimal": false,
         "obj": 2
     },
@@ -137,7 +137,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.02,
+        "time": 0.01,
         "optimal": true,
         "obj": 2
     },
@@ -419,7 +419,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.033166714000003594,
+        "time": 0.005784796999932951,
         "optimal": false,
         "obj": 2
     },
@@ -444,5 +444,29 @@
         "time": 0.3210707970000044,
         "optimal": false,
         "obj": 50
+    },
+    "SAT1-heule(n=2)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.01,
+        "optimal": false,
+        "obj": 2
+    },
+    "SAT1-sequential(n=2)": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.01,
+        "optimal": false,
+        "obj": 2
+    },
+    "SAT2-(n=2)(OPT-version)(PRECOMPUTING)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.007212909999907424,
+        "optimal": true,
+        "obj": 2
     }
 }

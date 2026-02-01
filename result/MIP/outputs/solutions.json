@@ -3,7 +3,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.019,
+        "time": 0.002,
         "optimal": true,
         "obj": 2.0
     },
@@ -66,5 +66,13 @@
         "time": 224.485,
         "optimal": true,
         "obj": 14.0
+    },
+    "MIP (n = 2) (OPT-version)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.002,
+        "optimal": true,
+        "obj": 2.0
     }
 }

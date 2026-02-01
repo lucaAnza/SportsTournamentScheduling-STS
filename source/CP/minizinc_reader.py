@@ -11,7 +11,7 @@ docker_filename = '/app/outputs/CP/solutions.json'
 # ========== HELP FUNCTIONS ========== #
 return_codes = {
     0: "SAT",
-    1: "UNSAT",
+    1: "❌ UNSAT",
     2: "TIME_EXCEEDED"
 }
 
@@ -87,16 +87,16 @@ def import_raw_solution(filename='output.txt'):
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
-        print(f"✅ Successfully read raw solution from '{filename}'")
+        print(f"Successfully read raw solution from '{filename}'")
         return content
     except FileNotFoundError:
-        print(f"❌ File '{filename}' not found. Make sure the file exists.")
+        print(f"File '{filename}' not found. Make sure the file exists.")
         return ""
     except PermissionError:
-        print(f"❌ Permission denied when reading '{filename}'.")
+        print(f"Permission denied when reading '{filename}'.")
         return ""
     except Exception as e:
-        print(f"❌ Error reading file '{filename}': {e}")
+        print(f"Error reading file '{filename}': {e}")
         return ""
     
 
@@ -147,7 +147,7 @@ def export_json_solution(data, filename, indent=4, compact_keys=("sol",)):
     with open(filename, "w") as f:
         write(data, f, 0); f.write("\n")
 
-    print(f"✅ Successfully exported the json solution  ('{filename}')")
+    print(f"Successfully exported the json solution  ('{filename}')")
 
 def add_solution_json(data , new_entry , solution_name = 'Name'):
     data[solution_name] = new_entry

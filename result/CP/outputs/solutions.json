@@ -87,5 +87,37 @@
         "time": 300.25,
         "optimal": false,
         "obj": 13
+    },
+    "CP (n = 2) - Gecode (No SB)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.07,
+        "optimal": true,
+        "obj": 1
+    },
+    "CP (n = 2) - Chuffed (No SB)": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.06,
+        "optimal": true,
+        "obj": 1
+    },
+    "CP (n = 2) - Gecode + SB": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.06,
+        "optimal": true,
+        "obj": 1
+    },
+    "CP (n = 2) - Chuffed + SB": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.06,
+        "optimal": true,
+        "obj": 1
     }
 }

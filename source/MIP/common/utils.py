@@ -85,7 +85,7 @@ def export_json_solution(data, filename, indent=4, compact_keys=("sol",)):
     with open(filename, "w") as f:
         write(data, f, 0); f.write("\n")
 
-    print(f"✅ Successfully exported the json solution  ('{filename}')")
+    print(f"Successfully exported the json solution  ('{filename}')")
 
 def add_solution_json(data , new_entry , solution_name = 'Name'):
     data[solution_name] = new_entry
