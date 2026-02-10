@@ -72,6 +72,30 @@ run_all_for_range() {
   done
 }
 
+# run all versions for a single specific n
+run_all_for_single_n() {
+  local n="$1"
+
+  if (( n < 2 )); then
+    echo "n must be >= 2"
+    return 1
+  fi
+
+  # STS requires even n; enforce even n
+  if (( n % 2 == 1 )); then
+    echo "Warning: n is odd. Using n=$((n-1)) because n must be even."
+    n=$((n-1))
+  fi
+
+  echo -e "\n\n=============================="
+  echo " Running ALL families for n=$n"
+  echo "=============================="
+
+  run_sat_all_versions_for_n "$n"
+  run_cp_all_versions_for_n "$n"
+  run_mip_all_versions_for_n "$n"
+}
+
 while true; do
     echo -e "\n\n===== Start Menu ====="
     i=1
@@ -82,9 +106,14 @@ while true; do
         ((i++))
     done
 
-    # New option
+    # Option: run range 2..N
     RUN_RANGE_OPTION=$i
     echo "$RUN_RANGE_OPTION. RUN ALL (SAT+CP+MIP) for n = 2..N (even only)"
+    ((i++))
+
+    # Option: run all for a specific n
+    RUN_SINGLE_OPTION=$i
+    echo "$RUN_SINGLE_OPTION. RUN ALL (SAT+CP+MIP) for a specific n"
 
     echo "0. Exit"
     echo "======================"
@@ -97,6 +126,9 @@ while true; do
     elif [[ "$choice" -eq "$RUN_RANGE_OPTION" ]]; then
         read -rp "Enter max number of teams N (int): " Nmax
         run_all_for_range "$Nmax"
+    elif [[ "$choice" -eq "$RUN_SINGLE_OPTION" ]]; then
+        read -rp "Enter number of teams n (int, even): " n_single
+        run_all_for_single_n "$n_single"
     elif (( choice >= 1 && choice <= ${#order[@]} )); then
         key="${order[$((choice-1))]}"
         script="${scripts[$key]}"
