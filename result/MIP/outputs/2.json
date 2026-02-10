@@ -1,0 +1,18 @@
+{
+    "MIP": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0,
+        "optimal": true,
+        "obj": 2
+    },
+    "MIP (OPT-version)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0,
+        "optimal": true,
+        "obj": 2
+    }
+}

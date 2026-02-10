@@ -1,0 +1,66 @@
+{
+    "SAT1": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.01,
+        "optimal": false,
+        "obj": 2
+    },
+    "SAT1-heule": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.01,
+        "optimal": false,
+        "obj": 2
+    },
+    "SAT1-bitwise": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.01,
+        "optimal": false,
+        "obj": 2
+    },
+    "SAT2(PRECOMPUTING)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0,
+        "optimal": false,
+        "obj": 2
+    },
+    "SAT1(OPT-version)": {
+        "sol": [
+            [[2,1]]
+        ],
+        "time": 0.01,
+        "optimal": true,
+        "obj": 2
+    },
+    "SAT1-heule(OPT-version)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.01,
+        "optimal": true,
+        "obj": 2
+    },
+    "SAT1-bitwise(OPT-version)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0.01,
+        "optimal": true,
+        "obj": 2
+    },
+    "SAT2(OPT-version)(PRECOMPUTING)": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0,
+        "optimal": true,
+        "obj": 2
+    }
+}
