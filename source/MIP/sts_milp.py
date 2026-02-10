@@ -7,13 +7,12 @@ from common.utils import *
 
 
 # ========== SETTINGS VARIABLE ========== #
-script_filename = 'solutions.json'
-docker_filename = '/app/outputs/MIP/solutions.json'
-default_filename = script_filename
+script_path = ''
+docker_path = '/app/outputs/MIP/'
 debug_info = False
-    
+
 # ==================================== problem size ====================================
-n , W , P , _ , default_filename , opt_enable , _ = get_user_settings(sys.argv , docker_filename , script_filename)
+n , W , P , _ , default_filename , opt_enable , _ = get_user_settings(sys.argv , docker_path , script_path)
 teams = range(n)
 weeks = range(W)
 periods = range(P)
@@ -21,7 +20,7 @@ periods = range(P)
 pairs = [(i, j) for i in teams for j in teams if i < j] # all ordered pairs (i<j) (to avoid double match-ups)
 pair_idx = {(i, j): k for k, (i, j) in enumerate(pairs)} # Precompute pair -> index (fast lookup)
 
-solution_name = f'MIP (n = {n})'
+solution_name = f'MIP'
 # ==================================== MODEL and VARIABLES ====================================
 # the model aim is to minimize the objective function
 m = Model(sense=minimize)

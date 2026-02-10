@@ -6,7 +6,7 @@ import argparse
 def _yes(prompt: str) -> bool:
     return input(prompt).strip().lower() in ("y", "yes", "true", "1")
 
-def get_user_settings(argv, docker_filename, script_filename):
+def get_user_settings(argv, docker_path, script_path):
     parser = argparse.ArgumentParser(
         prog="scheduler",
         description="Sports Tournament Scheduler settings"
@@ -35,7 +35,7 @@ def get_user_settings(argv, docker_filename, script_filename):
         precomputing_version = args.precomputing
 
     # Derivated variables
-    default_filename = docker_filename if docker_mode else script_filename
+    default_filename = docker_path + str(team) + ".json" if docker_mode else script_path + str(team) + ".json"
     weeks = team - 1
     periods = team // 2
     home = 2

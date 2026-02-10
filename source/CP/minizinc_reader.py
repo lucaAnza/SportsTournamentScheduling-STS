@@ -4,8 +4,8 @@ import os
 
 
 # ========== SETTINGS VARIABLE ========== #
-script_filename = 'solutions.json'
-docker_filename = '/app/outputs/CP/solutions.json'
+script_path = ''
+docker_path = '/app/outputs/CP/'
 
 
 # ========== HELP FUNCTIONS ========== #
@@ -20,7 +20,7 @@ return_codes = {
 # 0 -> SAT
 # 1 -> UNSAT
 # 2 -> TIME_EXCEEDED
-def process_output_string(output_str, data, total_time, solution_name="myAlgorithm"):
+def process_output_string(output_str , total_time):
     lines = output_str.splitlines()
     solution_lines = []
     optimal = False
@@ -74,6 +74,8 @@ def process_output_string(output_str, data, total_time, solution_name="myAlgorit
         except json.JSONDecodeError as e:
             raise ValueError(f"Error parsing solution line: '{s}'. Corrected string: '{s_corrected}'") from e
 
+    # return parsed_solution , int(total_time) , optimal , int(obj_val)
+
     new_entry = {
         'sol': parsed_solution,
         'time': int(total_time),
@@ -81,9 +83,9 @@ def process_output_string(output_str, data, total_time, solution_name="myAlgorit
         'obj': int(obj_val) if obj_val is not None else None
     }
     
-    return new_entry , n , 0
+    return new_entry , n , 0  # The last one is the return code
 
-def import_raw_solution(filename='output.txt'):
+def import_raw_minizinc_output(filename='output.txt'):
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -158,7 +160,7 @@ def add_solution_json(data , new_entry , solution_name = 'Name'):
 if __name__ == '__main__':
     
     # Set default filename
-    default_filename = script_filename
+    default_path = script_path
 
     if len(sys.argv) > 1:
         time = float(sys.argv[1])
@@ -168,16 +170,19 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         docker_string = sys.argv[2]
         if docker_string == '--docker':
-            default_filename = docker_filename
+            default_path = docker_path
     
     if len(sys.argv) > 3:
         version_name = sys.argv[3]
 
-    data = import_json_solution(default_filename)
-    output = import_raw_solution()
-    new_entry , n , return_code = process_output_string(output , data , time)
+    output = import_raw_minizinc_output()
+    new_entry , n , return_code = process_output_string(output  , time)
+
     if(return_code != 0 ):
         print(f"No solution found ({return_codes.get(return_code, 'UNKNOWN')}). No entry added to the json file.")
     else:
-        data = add_solution_json(data , new_entry , f'CP (n = {n}) - {version_name}')
-        export_json_solution(data , default_filename)
+    
+        filename = default_path + n + '.json'
+        data = import_json_solution(filename)
+        data = add_solution_json(data , new_entry , f'CP - {version_name}')
+        export_json_solution(data , filename)
