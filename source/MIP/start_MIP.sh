@@ -23,9 +23,9 @@ while true; do
         read -rp "Enter number of teams (int): " team 
         read -rp "Do you want optimized version? (y/n): " yn
         if [ $yn == "y" ]; then
-            python $SCRIPT_DIR/sts_milp.py $team "--optimized" $docker
+            python3 $SCRIPT_DIR/sts_milp.py $team "--optimized" $docker
         else
-            python $SCRIPT_DIR/sts_milp.py $team $docker
+            python3 $SCRIPT_DIR/sts_milp.py $team $docker
         fi        
     else
         echo "Invalid option. Try again."

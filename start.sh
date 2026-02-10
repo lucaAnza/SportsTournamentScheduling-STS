@@ -10,4 +10,4 @@ docker run --rm -it -v $(pwd)/result/SAT/outputs:/app/outputs/SAT -v $(pwd)/resu
 
 
 # Uncomment if you want to navigate docker filesystem
- # docker run -it cmdo_img bash  
+docker run -it cmdo_img bash  

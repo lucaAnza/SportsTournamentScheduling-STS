@@ -76,9 +76,9 @@ def process_output_string(output_str, data, total_time, solution_name="myAlgorit
 
     new_entry = {
         'sol': parsed_solution,
-        'time': total_time,
+        'time': int(total_time),
         'optimal': optimal,
-        'obj': obj_val
+        'obj': int(obj_val) if obj_val is not None else None
     }
     
     return new_entry , n , 0
@@ -163,6 +163,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         time = float(sys.argv[1])
         time = round(time , 2)
+        time = int(time)
     
     if len(sys.argv) > 2:
         docker_string = sys.argv[2]

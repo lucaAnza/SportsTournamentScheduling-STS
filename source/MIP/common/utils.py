@@ -101,9 +101,9 @@ def add_solution_json(data , match_list, time, obj, is_optimal, solution_name="N
             [list(match) if match is not None else None for match in row]
             for row in match_list
         ],
-        "time": round(float(time), 3),
+        "time": int(time),
         "optimal": bool(is_optimal),
-        "obj": obj
+        "obj": int(obj)
     }
     return data
 ################################# I/O FUNCTIONS #########################################

@@ -253,6 +253,7 @@ class SAT2(ContextSolver):
         return obj.as_long()
 
     def add_solution_json(self , solution_name):
+        print("CALLED FUNCTION (DEBUG) : add_solution_json in SAT2")
         if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
         if(self.precomputing_enable) : solution_name = solution_name + '(PRECOMPUTING)'
 
@@ -262,7 +263,8 @@ class SAT2(ContextSolver):
         for w in range(self.week):
             for p, (h, a) in enumerate(packed[w]):
                 sol_list[p][w] = [h + 1, a + 1]  # 1-based
-        new_entry = {'sol': sol_list, 'time': self.init_time + self.solve_time, 'optimal': self.opt_enabled, 'obj': self.obj}
+        time = int(self.solve_time + self.init_time)
+        new_entry = {'sol': sol_list, 'time': time, 'optimal': self.opt_enabled, 'obj': int(self.obj)}
         self.data[solution_name] = new_entry
         return self.data
     
