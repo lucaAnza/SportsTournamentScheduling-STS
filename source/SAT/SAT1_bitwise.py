@@ -81,11 +81,9 @@ for t in range(0,team):
 
 print("-------------------------------------------------------------------------------------------------")
 
-if(optimized_version):
-    model = Optimize()  # Use Solver() if you don't use optimization function
-else:
-    model = Solver()
-    optimized_label = ''
+
+model = Optimize()  # Use Solver() if you don't use optimization function
+
 ################################# DOMAIN DEFINITION ###############################
 
 
