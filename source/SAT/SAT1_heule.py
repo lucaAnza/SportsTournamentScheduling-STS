@@ -12,6 +12,7 @@ script_path = ''                   # Name if this script is executed for debuggi
 docker_path = '/app/outputs/SAT/'  # Name if this script is executed from docker script
 SEED_FOR_REPRODUTION = 0       # set to 0 for default; >0 for reproduce an attempt
 team , weeks , periods , home , default_filename , optimized_version , precomputing_version = get_user_settings(sys.argv , docker_path , script_path)
+timeout = 300000 # milliseconds
 ################################# PARAMETERS ###############################
 
 
@@ -129,16 +130,19 @@ print(f"Init finished! ({init_time:.2f}s)")
 
 
 ################################# MAIN ###############################
-heule_model = SAT1(model , team , vars , default_filename , init_time , opt_enabled=optimized_version)
+heule_model = SAT1(model , team , vars , default_filename , init_time , opt_enabled=optimized_version , timeout=timeout)
 
+result_code = heule_model.solve()
 
-if( heule_model.solve() ) :
+if( result_code == 0 ) : # SAT
     print(f"SAT1-HEULE : The model is satisfiable (SAT) ✅ - exits at least one solution! (🕒: {init_time:.2f} + {heule_model.solve_time:.2f} = {(init_time+heule_model.solve_time):.2f}s)")
     print("obj : " , heule_model.obj)
     heule_model.add_solution_json(solution_name=f'SAT1-heule')
     heule_model.export_json_solution()
-else:
+elif( result_code == 1 ) : # UNSAT
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
+else: # UNKNOWN
+    print("The solver returned UNKNOWN (timeout reached) ⚠️")
 print("-------------------------------------------------------------------------------------------------")
 ################################# MAIN ###############################
 

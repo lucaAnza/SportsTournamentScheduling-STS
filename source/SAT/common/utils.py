@@ -11,7 +11,7 @@ from itertools import combinations
 ################################# WRAP CLASS #########################################
 class ContextSolver():
     
-    def __init__(self , z3_solver , team , solution_filename , init_time , opt_enabled):
+    def __init__(self , z3_solver , team , solution_filename , init_time , opt_enabled , timeout):
 
         if not(team % 2 == 0):
             raise ValueError("Team must be a non-negative integer")
@@ -28,6 +28,9 @@ class ContextSolver():
         self.home = 2
         self.solution_filename = solution_filename
         self.data = self.import_json_solution()
+        self.timeout = timeout
+        print("solver timeout is set to : " , self.timeout , "milliseconds")
+        self.solver.set(timeout=timeout)  # set the timeout for the solver (in milliseconds)
 
     def import_json_solution(self):
         try:
@@ -103,13 +106,16 @@ class ContextSolver():
             # Optimality research
             if(self.opt_enabled):
                 self.solve_opt()
+        elif(sat_result == z3.unknown):
+            self.solve_time = self.timeout/1000
+            return 2 # UNKNOWN (timeout or other solver failure)
 
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
         self.solve_time = ((end-start))
         if(find_one_at_least_one_solution):
-            return True
+            return 0
         else:
-            return False
+            return 1
     
     @abstractmethod
     def compute_obj_function(self):
@@ -124,9 +130,9 @@ class ContextSolver():
 
 class SAT1(ContextSolver):
 
-    def __init__(self , z3_solver , team , vars , solution_filename , init_time , opt_enabled):
+    def __init__(self , z3_solver , team , vars , solution_filename , init_time , opt_enabled , timeout) :
         self.vars = vars
-        super().__init__(z3_solver , team , solution_filename , init_time , opt_enabled )
+        super().__init__(z3_solver , team , solution_filename , init_time , opt_enabled , timeout)
 
     def compute_obj_function(self):
         vars = self.vars
@@ -213,12 +219,12 @@ class SAT1(ContextSolver):
 # TODO : Finish to implement this class expecially precomputing and test SAT1
 class SAT2(ContextSolver):
 
-    def __init__(self , z3_solver , team , M , HOME , P, solution_filename , init_time , opt_enabled , precomputing_enabled):
+    def __init__(self , z3_solver , team , M , HOME , P, solution_filename , init_time , opt_enabled , precomputing_enabled , timeout) :
         self.precomputing_enable = precomputing_enabled
         self.M = M
         self.HOME = HOME
         self.P = P
-        super().__init__(z3_solver , team , solution_filename , init_time , opt_enabled )
+        super().__init__(z3_solver , team , solution_filename , init_time , opt_enabled , timeout)
 
     def pack_week_pairs_from_model(self , model : ModelRef):
         """For each week, return a list of (home_team, away_team) ordered by period p=0..periods-1."""
