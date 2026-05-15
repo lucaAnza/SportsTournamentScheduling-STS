@@ -3,39 +3,39 @@
         "sol": [
             [[2,1]]
         ],
-        "time": 0.01,
-        "optimal": false,
-        "obj": 2
+        "time": 0,
+        "optimal": true,
+        "obj": null
     },
     "SAT1-heule": {
         "sol": [
             [[1,2]]
         ],
-        "time": 0.01,
-        "optimal": false,
-        "obj": 2
+        "time": 0,
+        "optimal": true,
+        "obj": null
     },
     "SAT1-bitwise": {
         "sol": [
             [[1,2]]
         ],
-        "time": 0.01,
-        "optimal": false,
-        "obj": 2
+        "time": 0,
+        "optimal": true,
+        "obj": null
     },
     "SAT2(PRECOMPUTING)": {
         "sol": [
             [[1,2]]
         ],
         "time": 0,
-        "optimal": false,
-        "obj": 2
+        "optimal": true,
+        "obj": null
     },
     "SAT1(OPT-version)": {
         "sol": [
             [[2,1]]
         ],
-        "time": 0.01,
+        "time": 0,
         "optimal": true,
         "obj": 2
     },
@@ -43,7 +43,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.01,
+        "time": 0,
         "optimal": true,
         "obj": 2
     },
@@ -51,7 +51,7 @@
         "sol": [
             [[1,2]]
         ],
-        "time": 0.01,
+        "time": 0,
         "optimal": true,
         "obj": 2
     },
@@ -62,5 +62,13 @@
         "time": 0,
         "optimal": true,
         "obj": 2
+    },
+    "SAT2": {
+        "sol": [
+            [[1,2]]
+        ],
+        "time": 0,
+        "optimal": true,
+        "obj": null
     }
 }

@@ -22,11 +22,11 @@ This repository provides an implementation for solving the Sports Tournament Sch
 
 - Implements multiple solving paradigms using differents tecnology:
 
-  - SAT (Boolean Satisfiability) for logical constraint modeling.   (**MINIZINC**)
+  - SAT (Boolean Satisfiability) for logical constraint modeling.   (**Z3**)
 
   - MIP (Mixed-Integer Programming) for optimization under linear constraints. 
 
-  - CP (Constraint Programming) for flexible scheduling constraints.  (**Z3**)
+  - CP (Constraint Programming) for flexible scheduling constraints.  (**MINIZINC**)
 
 
 ## Use Cases
@@ -48,7 +48,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
    ```
 4. Use the script menu as you prefer.
 
-   * Every **JSON solution generated** will be saved in the `result/<MODEL>/outputs` directory.
+   * Every **JSON solution generated** will be saved in the `res/<MODEL>/outputs` directory.
      * It is possible to test the correctness of the solution in linear time using [solution_checker.py](notes/solution_checker.py).
    * Each program appends its solution to the same file.
    * To reset, simply delete `solutions.json` file.
@@ -62,12 +62,12 @@ This repository provides an implementation for solving the Sports Tournament Sch
    ```bash
    docker build -t cmdo_img:latest .
 
-   docker run --rm -it -v ${PWD}\result\SAT\outputs:/app/outputs/SAT -v ${PWD}\result\CP\outputs:/app/outputs/CP -v ${PWD}\result\MIP\outputs:/app/outputs/MIP cmdo_img 
+   docker run --rm -it -v ${PWD}\res\SAT\outputs:/app/outputs/SAT -v ${PWD}\res\CP\outputs:/app/outputs/CP -v ${PWD}\res\MIP\outputs:/app/outputs/MIP cmdo_img 
    
    ```
 4. Use the script menu as you prefer.
 
-   * Every **JSON solution generated** will be saved in the `result/<MODEL>/outputs` directory.
+   * Every **JSON solution generated** will be saved in the `res/<MODEL>/outputs` directory.
       * It is possible to test the correctness of the solution in linear time using [solution_checker.py](notes/solution_checker.py).
    * Each program appends its solution to the same file.
    * To reset, simply delete `solutions.json` file.
@@ -75,7 +75,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
 
 ###  Result
 
-In the `/result` directory, you will find **key results** saved for specific values of n (e.g., n = 2, n = 6, n = 12).
+In the `/res` directory, you will find **key results** saved for specific values of n (e.g., n = 2, n = 6, n = 12).
 For each model, the _highest value of n_ successfully reached is also recorded.
 For example, if a model only shows _n = 12_ and no other values, it means that 12 is the maximum value it was able to achieve.
 

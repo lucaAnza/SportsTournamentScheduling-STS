@@ -17,6 +17,7 @@ class ContextSolver():
             raise ValueError("Team must be a non-negative integer")
 
         self.opt_enabled = opt_enabled
+        self.proved_optimal = not opt_enabled
         self.obj = None
         self.init_time = init_time
         self.solve_time = -1
@@ -161,11 +162,16 @@ class SAT1(ContextSolver):
                 match = ['X','X']
             sol_list.append(period_list)
         
+        optimal = (not self.opt_enabled) or self.proved_optimal
+        time = int(self.solve_time + self.init_time)
+        if not optimal:
+            time = 300
+
         new_entry = {}
         new_entry['sol'] = sol_list
-        new_entry['time']  = round(self.solve_time + self.init_time,2)
-        new_entry['optimal'] = self.opt_enabled
-        new_entry['obj'] = (self.obj)
+        new_entry['time']  = time
+        new_entry['optimal'] = optimal
+        new_entry['obj'] = int(self.obj) if self.opt_enabled else None
         self.data[solution_name] = new_entry
 
     def solve_opt(self):
@@ -182,6 +188,7 @@ class SAT1(ContextSolver):
             sat_result = self.solver.check() 
             upper_bound = upper_bound - 1
         
+        self.proved_optimal = (sat_result == unsat)
         self.solver.pop() # Restored the status of the solver (removed all constraint about optimality)
         self.obj = self.compute_obj_function()
 
@@ -268,8 +275,16 @@ class SAT2(ContextSolver):
         for w in range(self.week):
             for p, (h, a) in enumerate(packed[w]):
                 sol_list[p][w] = [h + 1, a + 1]  # 1-based
+        optimal = (not self.opt_enabled) or self.proved_optimal
         time = int(self.solve_time + self.init_time)
-        new_entry = {'sol': sol_list, 'time': time, 'optimal': self.opt_enabled, 'obj': int(self.obj)}
+        if not optimal:
+            time = 300
+        new_entry = {
+            'sol': sol_list,
+            'time': time,
+            'optimal': optimal,
+            'obj': int(self.obj) if self.opt_enabled else None
+        }
         self.data[solution_name] = new_entry
         return self.data
     
@@ -291,6 +306,7 @@ class SAT2(ContextSolver):
                 self.model = self.solver.model()
             lower_bound = lower_bound + 1
         
+        self.proved_optimal = (sat_result == unsat)
         self.solver.pop()     # Restored the status of the solver (removed all constraint about optimality)
         self.obj = self.compute_obj_function()
 ################################# WRAP CLASS #########################################
