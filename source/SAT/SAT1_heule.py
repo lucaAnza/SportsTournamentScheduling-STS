@@ -139,8 +139,12 @@ if( result_code == 0 ) : # SAT
     heule_model.export_json_solution()
 elif( result_code == 1 ) : # UNSAT
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
+    heule_model.add_empty_solution_json(solution_name=f'SAT1-heule')
+    heule_model.export_json_solution()
 else: # UNKNOWN
     print("The solver returned UNKNOWN (timeout reached) ⚠️")
+    heule_model.add_empty_solution_json(solution_name=f'SAT1-heule', timed_out=True)
+    heule_model.export_json_solution()
 print("-------------------------------------------------------------------------------------------------")
 ################################# MAIN ###############################
 
@@ -153,4 +157,3 @@ print("-------------------------------------------------------------------------
 
 
             
-

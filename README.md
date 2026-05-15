@@ -48,7 +48,7 @@ This repository provides an implementation for solving the Sports Tournament Sch
    ```
 4. Use the script menu as you prefer.
 
-   * Every **JSON solution generated** will be saved in the `res/<MODEL>/outputs` directory.
+   * Every **JSON solution generated** will be saved in the `res/<MODEL>` directory.
      * It is possible to test the correctness of the solution in linear time using [solution_checker.py](notes/solution_checker.py).
    * Each program appends its solution to the same file.
    * To reset, simply delete `solutions.json` file.
@@ -62,12 +62,12 @@ This repository provides an implementation for solving the Sports Tournament Sch
    ```bash
    docker build -t cmdo_img:latest .
 
-   docker run --rm -it -v ${PWD}\res\SAT\outputs:/app/outputs/SAT -v ${PWD}\res\CP\outputs:/app/outputs/CP -v ${PWD}\res\MIP\outputs:/app/outputs/MIP cmdo_img 
+   docker run --rm -it -v ${PWD}\res\SAT:/app/outputs/SAT -v ${PWD}\res\CP:/app/outputs/CP -v ${PWD}\res\MIP:/app/outputs/MIP cmdo_img 
    
    ```
 4. Use the script menu as you prefer.
 
-   * Every **JSON solution generated** will be saved in the `res/<MODEL>/outputs` directory.
+   * Every **JSON solution generated** will be saved in the `res/<MODEL>` directory.
       * It is possible to test the correctness of the solution in linear time using [solution_checker.py](notes/solution_checker.py).
    * Each program appends its solution to the same file.
    * To reset, simply delete `solutions.json` file.

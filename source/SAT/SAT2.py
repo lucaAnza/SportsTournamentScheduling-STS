@@ -171,8 +171,12 @@ if( result_code == 0) : # SAT
         print(f"{d.name()} = {sequential_model.model[d]}")"""
 elif(result_code == 1): # UNSAT
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
+    sequential_model.add_empty_solution_json(solution_name=f'SAT2')
+    sequential_model.export_json_solution()
 else: # UNKNOWN
     print("The solver returned UNKNOWN (timeout reached) ⚠️")
+    sequential_model.add_empty_solution_json(solution_name=f'SAT2', timed_out=True)
+    sequential_model.export_json_solution()
 print("-------------------------------------------------------------------------------------------------")
 ################################# MAIN ###############################
 
@@ -190,5 +194,4 @@ if debug_info:
     for w in range(weeks):
         print("IN THE WEEK ", w ," will be played only this matches", " = " , temp_round_robin[w])
         
-
 

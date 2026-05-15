@@ -20,20 +20,23 @@ return_codes = {
 # 0 -> SAT
 # 1 -> UNSAT
 # 2 -> TIME_EXCEEDED
-def process_output_string(output_str , total_time):
+def process_output_string(output_str , total_time, n_hint=None):
     lines = output_str.splitlines()
     solution_lines = []
     optimal = False
     obj_val = None
     in_solution = False
+    stripped_lines = [line.strip() for line in lines]
 
-    # If the first line is "=====UNSATISFIABLE=====", return empty solution
-    if lines and lines[0].strip() == "=====UNSATISFIABLE=====":
-        return None , None , 1
+    # If MiniZinc proves UNSAT without a solution, return empty solution
+    has_solution = any(line.startswith('sol:') for line in stripped_lines)
 
-    # If the first line is "=====UNKNOWN=====", return empty solution
-    if lines and lines[0].strip() == "=====UNKNOWN=====":
-        return None , None , 2     
+    if "=====UNSATISFIABLE=====" in stripped_lines and not has_solution:
+        return {'time': int(total_time), 'optimal': False, 'obj': "None", 'sol': []}, str(n_hint), 1
+
+    # If MiniZinc times out without a solution, return empty solution
+    if "=====UNKNOWN=====" in stripped_lines and not has_solution:
+        return {'time': 300, 'optimal': False, 'obj': "None", 'sol': []}, str(n_hint), 2
     for line in lines:
         stripped = line.strip()
         if not stripped:
@@ -76,9 +79,13 @@ def process_output_string(output_str , total_time):
 
     # return parsed_solution , int(total_time) , optimal , int(obj_val)
 
+    time_value = int(total_time)
+    if not optimal and time_value >= 299:
+        time_value = 300
+
     new_entry = {
         'sol': parsed_solution,
-        'time': int(total_time),
+        'time': time_value,
         'optimal': optimal,
         'obj': int(obj_val) if obj_val is not None else None
     }
@@ -175,13 +182,18 @@ if __name__ == '__main__':
     if len(sys.argv) > 3:
         version_name = sys.argv[3]
 
-    output = import_raw_minizinc_output()
-    new_entry , n , return_code = process_output_string(output  , time)
+    n_hint = None
+    if len(sys.argv) > 4:
+        n_hint = sys.argv[4]
 
-    if(return_code != 0 ):
-        print(f"No solution found ({return_codes.get(return_code, 'UNKNOWN')}). No entry added to the json file.")
+    output = import_raw_minizinc_output()
+    new_entry , n , return_code = process_output_string(output  , time, n_hint)
+
+    if n is None or n == 'None':
+        print(f"No solution found ({return_codes.get(return_code, 'UNKNOWN')}). Cannot export because n is unknown.")
     else:
-    
+        if(return_code != 0 ):
+            print(f"No solution found ({return_codes.get(return_code, 'UNKNOWN')}). Exporting empty result entry.")
         filename = default_path + n + '.json'
         data = import_json_solution(filename)
         data = add_solution_json(data , new_entry , f'CP - {version_name}')

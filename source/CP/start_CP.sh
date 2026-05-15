@@ -31,7 +31,7 @@ while true; do
         minizinc --solver Gecode --time-limit $time_limit -D "n=$team" "$SCRIPT_DIR/STS_noSB.mzn" > output.txt 2>/dev/null
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
-        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Gecode (No SB)"
+        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Gecode (No SB)" "$team"
         rm output.txt
     elif [[ "$choice" == "2" ]]; then
         # Ask parameters
@@ -41,7 +41,7 @@ while true; do
         minizinc --solver Chuffed --time-limit $time_limit -D "n=$team" "$SCRIPT_DIR/STS_noSB.mzn" > output.txt 2> /dev/null
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
-        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Chuffed (No SB)"
+        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Chuffed (No SB)" "$team"
         rm output.txt
     elif [[ "$choice" == "3" ]]; then
         # Ask parameters
@@ -51,7 +51,7 @@ while true; do
         minizinc --solver Gecode --time-limit $time_limit -D "n=$team" "$SCRIPT_DIR/STS.mzn" > output.txt 2> /dev/null
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
-        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Gecode + SB"
+        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Gecode + SB" "$team"
         rm output.txt
     elif [[ "$choice" == "4" ]]; then
         # Ask parameters
@@ -61,7 +61,7 @@ while true; do
         minizinc --solver Chuffed --time-limit $time_limit -D "n=$team" "$SCRIPT_DIR/STS.mzn" > output.txt 2> /dev/null
         end=$(date +%s.%N)
         runtime=$(echo "$end - $start" | bc)
-        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Chuffed + SB"
+        python3 $SCRIPT_DIR/minizinc_reader.py $runtime "$docker" "Chuffed + SB" "$team"
         rm output.txt
     else
         echo "Invalid option. Try again."

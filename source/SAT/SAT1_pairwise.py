@@ -134,8 +134,12 @@ if( result_code == 0 ) : # SAT
     pairwise_model.visualize_solution_raw("raw_solution.txt")
 elif( result_code == 1 ) : # UNSAT
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
+    pairwise_model.add_empty_solution_json(solution_name=f'SAT1')
+    pairwise_model.export_json_solution()
 else: # UNKNOWN
     print("The solver returned UNKNOWN (timeout reached) ⚠️")
+    pairwise_model.add_empty_solution_json(solution_name=f'SAT1', timed_out=True)
+    pairwise_model.export_json_solution()
 print("-------------------------------------------------------------------------------------------------")
 ################################# MAIN ###############################
 
@@ -148,4 +152,3 @@ print("-------------------------------------------------------------------------
 
 
             
-

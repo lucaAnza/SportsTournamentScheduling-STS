@@ -177,8 +177,12 @@ if( result_code == 0 ) : # SAT
     sequential_model.export_json_solution()
 elif( result_code == 1 ) : # UNSAT
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
+    sequential_model.add_empty_solution_json(solution_name=f'SAT1')
+    sequential_model.export_json_solution()
 else: # UNKNOWN
     print("The solver returned UNKNOWN (timeout reached) ⚠️")
+    sequential_model.add_empty_solution_json(solution_name=f'SAT1', timed_out=True)
+    sequential_model.export_json_solution()
 print("-------------------------------------------------------------------------------------------------")
 ################################# MAIN ###############################
 
@@ -191,4 +195,3 @@ print("-------------------------------------------------------------------------
 
 
             
-

@@ -96,17 +96,19 @@ def add_solution_json(data , match_list, time, obj, is_optimal, solution_name="N
     if data is None:
         return {}
 
-    data[solution_name] = {
-        "sol": [
+    if match_list == []:
+        sol = []
+    else:
+        sol = [
             [list(match) if match is not None else None for match in row]
             for row in match_list
-        ],
+        ]
+
+    data[solution_name] = {
         "time": int(time),
         "optimal": bool(is_optimal),
-        "obj": int(obj)
+        "obj": obj if obj == "None" else (int(obj) if obj is not None else None),
+        "sol": sol
     }
     return data
 ################################# I/O FUNCTIONS #########################################
-
-
-

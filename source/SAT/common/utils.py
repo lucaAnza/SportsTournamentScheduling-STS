@@ -110,6 +110,14 @@ class ContextSolver():
         # TO IMPLEMENT IN SUBCLASS
         pass
 
+    def empty_result_entry(self, timed_out=False):
+        return {
+            'time': 300 if timed_out else int(self.solve_time + self.init_time),
+            'optimal': False,
+            'obj': "None",
+            'sol': []
+        }
+
     def solve(self):
         start = time.perf_counter() # -----------------------------------------------------------------------------TIME(START)
         self.solve_start = start
@@ -156,10 +164,14 @@ class SAT1(ContextSolver):
         total_imbalance = Sum(team_imbalance)
         obj = self.model.evaluate(total_imbalance)
         return obj.as_long()
+
+    def solution_name(self, solution_name):
+        if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
+        return solution_name
     
     def add_solution_json(self , solution_name ):
         
-        if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
+        solution_name = self.solution_name(solution_name)
         vars = self.vars
         
         match = ['X','X']
@@ -188,6 +200,9 @@ class SAT1(ContextSolver):
         new_entry['optimal'] = optimal
         new_entry['obj'] = int(self.obj) if self.opt_enabled else None
         self.data[solution_name] = new_entry
+
+    def add_empty_solution_json(self, solution_name, timed_out=False):
+        self.data[self.solution_name(solution_name)] = self.empty_result_entry(timed_out)
 
     def solve_opt(self):
         sat_result = sat
@@ -286,9 +301,13 @@ class SAT2(ContextSolver):
         obj = self.model.evaluate(total_imbalance)
         return obj.as_long()
 
-    def add_solution_json(self , solution_name):
+    def solution_name(self, solution_name):
         if(self.opt_enabled) : solution_name = solution_name + '(OPT-version)'
         if(self.precomputing_enable) : solution_name = solution_name + '(PRECOMPUTING)'
+        return solution_name
+
+    def add_solution_json(self , solution_name):
+        solution_name = self.solution_name(solution_name)
 
         # Build a periods×weeks array of matches [home,away] using the model
         sol_list = [[['X', 'X'] for _ in range(self.week)] for __ in range(self.periods)]
@@ -307,6 +326,10 @@ class SAT2(ContextSolver):
             'obj': int(self.obj) if self.opt_enabled else None
         }
         self.data[solution_name] = new_entry
+        return self.data
+
+    def add_empty_solution_json(self, solution_name, timed_out=False):
+        self.data[self.solution_name(solution_name)] = self.empty_result_entry(timed_out)
         return self.data
     
     def solve_opt(self):

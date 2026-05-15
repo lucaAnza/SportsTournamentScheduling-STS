@@ -146,6 +146,8 @@ elif status == OptimizationStatus.FEASIBLE:
 else:
     print("❌ No solution found (UNSAT OR TIME_EXCEEDED)")
 
+data = import_json_solution(default_filename)
+
 if m.num_solutions:
     # Build matrix: periods x weeks
     schedule = [[None for _ in weeks] for _ in periods]
@@ -158,9 +160,13 @@ if m.num_solutions:
                     else:
                         schedule[p][w] = (j+1, i+1)   # j home, i away
 
-    data = import_json_solution(default_filename)
-    data = add_solution_json(data , schedule , runtime , m.objective_value , optimal ,  solution_name=solution_name)
-    export_json_solution(data , filename=default_filename)
+    export_time = runtime if optimal else 300
+    data = add_solution_json(data , schedule , export_time , m.objective_value , optimal ,  solution_name=solution_name)
+else:
+    export_time = runtime if status == OptimizationStatus.INFEASIBLE else 300
+    data = add_solution_json(data, [], export_time, "None", False, solution_name=solution_name)
+
+export_json_solution(data , filename=default_filename)
     
 
 

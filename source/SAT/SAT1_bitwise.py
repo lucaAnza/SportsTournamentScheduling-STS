@@ -170,8 +170,12 @@ if( result_code == 0 ) : # SAT
     bitwise_model.export_json_solution()
 elif( result_code == 1 ) : # UNSAT
     print("The model is unsatisfiable (UNSAT) ❌  - doesn't exits solution at all")
+    bitwise_model.add_empty_solution_json(solution_name=f'SAT1-bitwise')
+    bitwise_model.export_json_solution()
 else: # UNKNOWN
     print("The solver returned UNKNOWN (timeout reached) ⚠️")
+    bitwise_model.add_empty_solution_json(solution_name=f'SAT1-bitwise', timed_out=True)
+    bitwise_model.export_json_solution()
 print("-------------------------------------------------------------------------------------------------")
 
 
@@ -186,4 +190,3 @@ print("-------------------------------------------------------------------------
 
 
             
-
