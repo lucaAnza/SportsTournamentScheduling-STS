@@ -78,7 +78,3 @@ This repository provides an implementation for solving the Sports Tournament Sch
 In the `/res` directory, you will find **key results** saved for specific values of n (e.g., n = 2, n = 6, n = 12).
 For each model, the _highest value of n_ successfully reached is also recorded.
 For example, if a model only shows _n = 12_ and no other values, it means that 12 is the maximum value it was able to achieve.
-
-### TODO
-
-1. Stop opt-search at time 300 secs (SAT1 & SAT2)

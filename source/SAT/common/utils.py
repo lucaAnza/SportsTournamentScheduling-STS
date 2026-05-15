@@ -30,8 +30,22 @@ class ContextSolver():
         self.solution_filename = solution_filename
         self.data = self.import_json_solution()
         self.timeout = timeout
+        self.solve_start = None
         print("solver timeout is set to : " , self.timeout , "milliseconds")
-        self.solver.set(timeout=timeout)  # set the timeout for the solver (in milliseconds)
+        self.solver.set(timeout=self.remaining_timeout_ms())
+
+    def remaining_timeout_ms(self):
+        elapsed_ms = int(self.init_time * 1000)
+        if self.solve_start is not None:
+            elapsed_ms += int((time.perf_counter() - self.solve_start) * 1000)
+        return max(0, self.timeout - elapsed_ms)
+
+    def check_with_remaining_timeout(self):
+        remaining = self.remaining_timeout_ms()
+        if remaining <= 0:
+            return z3.unknown
+        self.solver.set(timeout=remaining)
+        return self.solver.check()
 
     def import_json_solution(self):
         try:
@@ -98,8 +112,9 @@ class ContextSolver():
 
     def solve(self):
         start = time.perf_counter() # -----------------------------------------------------------------------------TIME(START)
+        self.solve_start = start
         find_one_at_least_one_solution = False
-        sat_result = self.solver.check()   # Start the SAT search and fill the variable model with the solution (ModelRef)
+        sat_result = self.check_with_remaining_timeout()   # Start the SAT search and fill the variable model with the solution (ModelRef)
         if(sat_result == z3.sat): 
             find_one_at_least_one_solution = True
             self.model = self.solver.model()
@@ -108,11 +123,11 @@ class ContextSolver():
             if(self.opt_enabled):
                 self.solve_opt()
         elif(sat_result == z3.unknown):
-            self.solve_time = self.timeout/1000
+            self.solve_time = min(time.perf_counter() - start, max(0, self.timeout / 1000 - self.init_time))
             return 2 # UNKNOWN (timeout or other solver failure)
 
         end = time.perf_counter()  # ------------------------------------------------------------------------------- TIME(END)
-        self.solve_time = ((end-start))
+        self.solve_time = min(end - start, max(0, self.timeout / 1000 - self.init_time))
         if(find_one_at_least_one_solution):
             return 0
         else:
@@ -179,13 +194,19 @@ class SAT1(ContextSolver):
         self.solver.push()  # Create a snapshot of the model
         upper_bound = (self.periods*self.week)//2
         # Linear research (every team the upperbound is decreased of 1)
-        while sat_result == sat:
+        while sat_result == sat and self.remaining_timeout_ms() > 0:
             self.model = self.solver.model()
             # Constraint for optimality
             for t in range(self.team):  
                 for h in range(self.home):
+                    if self.remaining_timeout_ms() <= 0:
+                        sat_result = unknown
+                        break
                     self.solver.add(at_most_k(list(self.vars[t,h,:,:].flatten()) , upper_bound))  
-            sat_result = self.solver.check() 
+                if sat_result == unknown:
+                    break
+            if sat_result == sat:
+                sat_result = self.check_with_remaining_timeout() 
             upper_bound = upper_bound - 1
         
         self.proved_optimal = (sat_result == unsat)
@@ -294,14 +315,18 @@ class SAT2(ContextSolver):
         lower_bound = 1
 
         # Linear research (every team the upperbound is decreased of 1)
-        while sat_result == sat:
+        while sat_result == sat and self.remaining_timeout_ms() > 0:
             # Constraint for optimality
             for t in range(self.team):                           
+                if self.remaining_timeout_ms() <= 0:
+                    sat_result = unknown
+                    break
                 at_least_k_home_match = at_least_k([(self.HOME[t][w]) for w in range(self.week)] , lower_bound)
                 at_least_k_away_match = at_least_k([Not(self.HOME[t][w]) for w in range(self.week)] , lower_bound) 
                 self.solver.add(at_least_k_home_match)
                 self.solver.add(at_least_k_away_match)    
-            sat_result = self.solver.check() 
+            if sat_result == sat:
+                sat_result = self.check_with_remaining_timeout() 
             if(sat_result == sat):
                 self.model = self.solver.model()
             lower_bound = lower_bound + 1
