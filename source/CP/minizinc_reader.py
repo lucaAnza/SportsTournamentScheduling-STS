@@ -32,7 +32,7 @@ def process_output_string(output_str , total_time, n_hint=None):
     has_solution = any(line.startswith('sol:') for line in stripped_lines)
 
     if "=====UNSATISFIABLE=====" in stripped_lines and not has_solution:
-        return {'time': int(total_time), 'optimal': False, 'obj': "None", 'sol': []}, str(n_hint), 1
+        return {'time': int(float(total_time)), 'optimal': True, 'obj': "None", 'sol': []}, str(n_hint), 1
 
     # If MiniZinc times out without a solution, return empty solution
     if "=====UNKNOWN=====" in stripped_lines and not has_solution:
@@ -79,15 +79,15 @@ def process_output_string(output_str , total_time, n_hint=None):
 
     # return parsed_solution , int(total_time) , optimal , int(obj_val)
 
-    time_value = int(total_time)
+    time_value = int(float(total_time))
     if not optimal and time_value >= 299:
         time_value = 300
 
     new_entry = {
-        'sol': parsed_solution,
         'time': time_value,
         'optimal': optimal,
-        'obj': int(obj_val) if obj_val is not None else None
+        'obj': int(obj_val) if obj_val is not None else None,
+        'sol': parsed_solution
     }
     
     return new_entry , n , 0  # The last one is the return code
@@ -171,7 +171,6 @@ if __name__ == '__main__':
 
     if len(sys.argv) > 1:
         time = float(sys.argv[1])
-        time = round(time , 2)
         time = int(time)
     
     if len(sys.argv) > 2:

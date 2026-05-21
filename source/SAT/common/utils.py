@@ -31,7 +31,7 @@ class ContextSolver():
         self.data = self.import_json_solution()
         self.timeout = timeout
         self.solve_start = None
-        print("solver timeout is set to : " , self.timeout , "milliseconds")
+        print("solver timeout is set to : " , self.timeout , "milliseconds" , f"({self.timeout//1000} seconds)")
         self.solver.set(timeout=self.remaining_timeout_ms())
 
     def remaining_timeout_ms(self):
@@ -112,8 +112,8 @@ class ContextSolver():
 
     def empty_result_entry(self, timed_out=False):
         return {
-            'time': 300 if timed_out else int(self.solve_time + self.init_time),
-            'optimal': False,
+            'time': self.timeout // 1000 if timed_out else int(self.solve_time),
+            'optimal': not timed_out,
             'obj': "None",
             'sol': []
         }
@@ -190,15 +190,15 @@ class SAT1(ContextSolver):
             sol_list.append(period_list)
         
         optimal = (not self.opt_enabled) or self.proved_optimal
-        time = int(self.solve_time + self.init_time)
-        if not optimal:
-            time = 300
+        time = int(self.solve_time)
+        if not optimal: 
+            time = self.timeout // 1000
 
         new_entry = {}
-        new_entry['sol'] = sol_list
-        new_entry['time']  = time
+        new_entry['time'] = time
         new_entry['optimal'] = optimal
         new_entry['obj'] = int(self.obj) if self.opt_enabled else None
+        new_entry['sol'] = sol_list
         self.data[solution_name] = new_entry
 
     def add_empty_solution_json(self, solution_name, timed_out=False):
@@ -259,7 +259,6 @@ class SAT1(ContextSolver):
                 f.close()
 
 
-# TODO : Finish to implement this class expecially precomputing and test SAT1
 class SAT2(ContextSolver):
 
     def __init__(self , z3_solver , team , M , HOME , P, solution_filename , init_time , opt_enabled , precomputing_enabled , timeout) :
@@ -316,14 +315,14 @@ class SAT2(ContextSolver):
             for p, (h, a) in enumerate(packed[w]):
                 sol_list[p][w] = [h + 1, a + 1]  # 1-based
         optimal = (not self.opt_enabled) or self.proved_optimal
-        time = int(self.solve_time + self.init_time)
+        time = int(self.solve_time)
         if not optimal:
-            time = 300
+            time = self.timeout // 1000
         new_entry = {
-            'sol': sol_list,
             'time': time,
             'optimal': optimal,
-            'obj': int(self.obj) if self.opt_enabled else None
+            'obj': int(self.obj) if self.opt_enabled else None,
+            'sol': sol_list
         }
         self.data[solution_name] = new_entry
         return self.data

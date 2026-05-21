@@ -163,8 +163,10 @@ if m.num_solutions:
     export_time = runtime if optimal else 300
     data = add_solution_json(data , schedule , export_time , m.objective_value , optimal ,  solution_name=solution_name)
 else:
-    export_time = runtime if status == OptimizationStatus.INFEASIBLE else 300
-    data = add_solution_json(data, [], export_time, "None", False, solution_name=solution_name)
+    if status == OptimizationStatus.INFEASIBLE:
+        data = add_solution_json(data, [], runtime, "None", True, solution_name=solution_name)
+    else:
+        data = add_solution_json(data, [], 300, "None", False, solution_name=solution_name)
 
 export_json_solution(data , filename=default_filename)
     

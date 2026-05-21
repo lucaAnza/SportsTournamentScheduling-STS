@@ -104,8 +104,12 @@ def add_solution_json(data , match_list, time, obj, is_optimal, solution_name="N
             for row in match_list
         ]
 
+    time_value = int(float(time))
+    if time_value >= 300:
+        time_value = 300
+
     data[solution_name] = {
-        "time": int(time),
+        "time": time_value,
         "optimal": bool(is_optimal),
         "obj": obj if obj == "None" else (int(obj) if obj is not None else None),
         "sol": sol
